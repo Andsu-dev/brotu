@@ -47,6 +47,13 @@ export {
 	type S3StorageConfig,
 	type Storage,
 } from "./lib/storage";
+export {
+	deliverWebhook,
+	resolveWebhook,
+	type WebhookConfig,
+	type WebhookEvent,
+	type WebhookEventName,
+} from "./lib/webhook";
 export type * from "./ports/content-generator.port";
 export {
 	BYTEPLUS_CATALOG,

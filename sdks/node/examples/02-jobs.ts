@@ -8,6 +8,8 @@ import { brotuClient, type Job } from "../src";
 
 const ai = brotuClient({
 	providers: { qwen: { apiKey: process.env.QWEN_API_KEY ?? "" } },
+	// When wait/poll settles, POST the result here. A down hook never fails the job.
+	webhook: process.env.BROTU_WEBHOOK_URL,
 });
 
 // ---------------------------------------------------------------- request handler

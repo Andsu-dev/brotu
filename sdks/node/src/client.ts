@@ -26,6 +26,13 @@ import {
 	runInSubmitMode,
 } from "./lib/jobs";
 import { createS3Storage, persistOutputs, type Storage } from "./lib/storage";
+import {
+	deliverWebhook,
+	resolveWebhook,
+	type WebhookConfig,
+	type WebhookEvent,
+	type WebhookEventName,
+} from "./lib/webhook";
 import type {
 	AudioGenerationParams,
 	ContentGeneratorPort,
@@ -93,6 +100,15 @@ export interface BrotuAI {
 		): Promise<Result<Generation>>;
 	};
 	/**
+	 * URL the client POSTs when a generation settles. Register at construction
+	 * (`webhook:`) or here later. A down hook never fails the generation.
+	 */
+	webhook: {
+		set(value: string | WebhookConfig): void;
+		clear(): void;
+		get(): WebhookConfig | undefined;
+	};
+	/**
 	 * Google capabilities with no portable equivalent. Present only when a google
 	 * key is configured.
 	 */
@@ -144,6 +160,9 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 	}
 
 	registerModels(options.models);
+
+	let registeredWebhook = resolveWebhook(options.webhook);
+	const notifiedJobIds = new Set<string>();
 
 	const storage: Storage | undefined = options.storage
 		? createS3Storage(options.storage)
@@ -260,6 +279,49 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		return adapter.generateText(params as TextGenerationParams);
 	}
 
+	function webhookFor(params?: GenerationParams): WebhookConfig | undefined {
+		return resolveWebhook(params?.webhook) ?? registeredWebhook;
+	}
+
+	async function notifySettled(input: {
+		event: WebhookEventName;
+		params?: GenerationParams;
+		job?: Job;
+		kind?: GenerationType;
+		provider?: string;
+		model?: string;
+		outputs?: Generation["outputs"];
+		error?: AIError;
+		metadata?: Record<string, string>;
+		processingTimeMs?: number;
+	}): Promise<void> {
+		const config = webhookFor(input.params);
+		if (!config) return;
+
+		const jobId = input.job?.id;
+		if (jobId) {
+			if (notifiedJobIds.has(jobId)) return;
+			notifiedJobIds.add(jobId);
+		}
+
+		const payload: WebhookEvent = {
+			event: input.event,
+			jobId,
+			provider: input.provider ?? input.job?.provider,
+			model: input.model ?? input.job?.model,
+			kind: input.kind ?? input.job?.kind,
+			outputs: input.outputs,
+			error: input.error
+				? { code: input.error.code, message: input.error.message }
+				: undefined,
+			metadata: input.metadata ?? input.job?.metadata,
+			processingTimeMs: input.processingTimeMs,
+			completedAt: new Date().toISOString(),
+		};
+
+		await deliverWebhook(config, payload);
+	}
+
 	/** Adapters still speak GenerationResult internally; the seam is here. */
 	async function toGeneration(
 		raw: GenerationResult,
@@ -296,15 +358,50 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		if (routed.error) return fail(routed.error);
 
 		try {
-			return await toGeneration(
+			const result = await toGeneration(
 				await generateWith(routed.data.adapter, kind, params),
 				params.metadata,
 			);
+			if (result.error) {
+				await notifySettled({
+					event: "generation.failed",
+					params,
+					kind,
+					provider: routed.data.provider,
+					model: routed.data.model,
+					error: result.error,
+					metadata: params.metadata,
+				});
+				return result;
+			}
+			await notifySettled({
+				event: "generation.succeeded",
+				params,
+				kind,
+				provider: result.data.provider,
+				model: result.data.model,
+				outputs: result.data.outputs,
+				metadata: result.data.metadata,
+				processingTimeMs: result.data.processingTimeMs,
+			});
+			return result;
 		} catch (error) {
-			return failFrom("provider_error", error, {
+			const failed = failFrom<Generation>("provider_error", error, {
 				provider: routed.data.provider,
 				model: routed.data.model,
 			});
+			if (failed.error) {
+				await notifySettled({
+					event: "generation.failed",
+					params,
+					kind,
+					provider: routed.data.provider,
+					model: routed.data.model,
+					error: failed.error,
+					metadata: params.metadata,
+				});
+			}
+			return failed;
 		}
 	}
 
@@ -331,18 +428,40 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 			);
 			// No task id: this provider answered inline, so the job is already done.
 			if (!raw.success) {
-				return fail({
+				const error: AIError = {
 					code: "provider_error",
 					message: raw.error ?? "The provider rejected the request.",
 					provider: raw.provider,
 					model: raw.model,
+				};
+				await notifySettled({
+					event: "generation.failed",
+					params,
+					kind,
+					provider: raw.provider,
+					model: raw.model,
+					error,
+					metadata: params.metadata,
 				});
+				return fail(error);
 			}
-			return ok({
+			const job: Job = {
 				...base,
 				id: `inline-${base.model}-${base.submittedAt}`,
 				result: raw,
+			};
+			await notifySettled({
+				event: "generation.succeeded",
+				params,
+				job,
+				kind,
+				provider: raw.provider,
+				model: raw.model,
+				outputs: raw.outputs,
+				metadata: params.metadata,
+				processingTimeMs: raw.processingTimeMs,
 			});
+			return ok(job);
 		} catch (error) {
 			if (!isPendingJob(error)) {
 				return failFrom("provider_error", error, {
@@ -358,13 +477,64 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		}
 	}
 
+	async function notifyFromSnapshot(
+		job: Job,
+		snapshot: JobSnapshot,
+	): Promise<void> {
+		if (snapshot.status === "succeeded" && snapshot.result) {
+			await notifySettled({
+				event: "generation.succeeded",
+				params: job.params,
+				job,
+				outputs: snapshot.result.outputs,
+				provider: snapshot.result.provider,
+				model: snapshot.result.model,
+				processingTimeMs: snapshot.result.processingTimeMs,
+				metadata: job.metadata,
+			});
+			return;
+		}
+		if (snapshot.status === "failed") {
+			await notifySettled({
+				event: "generation.failed",
+				params: job.params,
+				job,
+				error: {
+					code: "provider_error",
+					message: snapshot.error ?? "The job failed.",
+					provider: job.provider,
+					model: job.model,
+				},
+				metadata: job.metadata,
+			});
+		}
+	}
+
+	async function finalizeSnapshot(
+		job: Job,
+		snapshot: JobSnapshot,
+	): Promise<JobSnapshot> {
+		if (snapshot.status === "succeeded" && snapshot.result) {
+			const persisted = await toGeneration(snapshot.result, job.metadata);
+			if (!persisted.error) {
+				snapshot = {
+					status: "succeeded",
+					result: {
+						...snapshot.result,
+						outputs: persisted.data.outputs,
+					},
+				};
+			}
+		}
+		await notifyFromSnapshot(job, snapshot);
+		return snapshot;
+	}
+
 	async function pollJob(job: Job): Promise<Result<JobSnapshot>> {
 		if (job.result) {
-			return ok(
-				job.result.success
-					? { status: "succeeded", result: job.result }
-					: { status: "failed", error: job.result.error },
-			);
+			return ok(await finalizeSnapshot(job, job.result.success
+				? { status: "succeeded", result: job.result }
+				: { status: "failed", error: job.result.error }));
 		}
 
 		const routed = route(job.model);
@@ -381,7 +551,7 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		}
 
 		try {
-			return ok(await adapter.completeJob(job));
+			return ok(await finalizeSnapshot(job, await adapter.completeJob(job)));
 		} catch (error) {
 			return failFrom("provider_error", error, {
 				provider: job.provider,
@@ -462,6 +632,17 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 			submit: (params) => submit("audio", params),
 			generate: (params) => generate("audio", params),
 		},
+		webhook: {
+			set(value) {
+				registeredWebhook = resolveWebhook(value);
+			},
+			clear() {
+				registeredWebhook = undefined;
+			},
+			get() {
+				return registeredWebhook;
+			},
+		},
 		jobs: {
 			poll: pollJob,
 			wait: async (job, waitOptions) => {
@@ -473,8 +654,14 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 
 					const snapshot = polled.data;
 					if (snapshot.status === "succeeded" && snapshot.result) {
-						// A job resumed days later still knows what it was tagged with.
-						return toGeneration(snapshot.result, job.metadata);
+						// pollJob already persisted outputs and fired the webhook.
+						return ok({
+							outputs: snapshot.result.outputs,
+							provider: snapshot.result.provider,
+							model: snapshot.result.model,
+							processingTimeMs: snapshot.result.processingTimeMs,
+							metadata: job.metadata,
+						});
 					}
 					if (snapshot.status === "failed") {
 						return fail({

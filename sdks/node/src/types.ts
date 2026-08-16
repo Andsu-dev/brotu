@@ -1,5 +1,6 @@
 import type { AIModelConfig } from "./constants/model.types";
 import type { S3StorageConfig } from "./lib/storage";
+import type { WebhookConfig } from "./lib/webhook";
 
 export interface ProviderConfig {
 	apiKey: string;
@@ -52,6 +53,12 @@ export interface BrotuAIOptions {
 	elevenLabsVoiceId?: string;
 	/** Extra models, or overrides of built-in ones, merged by id. */
 	models?: AIModelConfig[];
+	/**
+	 * URL (or `{ url, secret }`) the client POSTs when a generation settles.
+	 * Fires from `generate`, `jobs.wait`, and a terminal `jobs.poll`. Change it
+	 * later with `ai.webhook.set`. A per-request `webhook` on the params wins.
+	 */
+	webhook?: string | WebhookConfig;
 }
 
 /** Resolved per-request routing: which host and key serve this model. */

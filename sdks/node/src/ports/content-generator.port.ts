@@ -1,4 +1,5 @@
 import type { BillingUnit } from "../constants/model.types";
+import type { WebhookConfig } from "../lib/webhook";
 
 /** Known values, kept open because providers disagree on spelling and units. */
 export type VideoResolution =
@@ -44,6 +45,11 @@ export interface CommonGenerationParams {
 	 * overrides what the adapter would otherwise send.
 	 */
 	providerOptions?: Record<string, Record<string, unknown>>;
+	/**
+	 * Override the client-level webhook for this request. Same shape: a URL
+	 * string or `{ url, secret }`. Not sent to the provider.
+	 */
+	webhook?: string | WebhookConfig;
 }
 
 /**
