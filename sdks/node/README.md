@@ -1,7 +1,31 @@
-# @brotu/ai
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Zorbi-Tech/brotu-sdk/main/docs/assets/logo.svg">
+    <img src="https://raw.githubusercontent.com/Zorbi-Tech/brotu-sdk/main/docs/assets/logo-black.svg" alt="Brotu" width="280">
+  </picture>
+</p>
 
-One TypeScript client for generative image and video, talking to each vendor's own
-API. You bring the keys; nothing is proxied, and no aggregator sits in between.
+<p align="center">
+  <strong>One TypeScript client for generative video, image, speech and text.</strong><br>
+  You bring the keys. Each call hits the vendor's own API.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm version" src="https://img.shields.io/npm/v/@brotu/ai?color=ef5e28"></a>
+  <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@brotu/ai?color=ef5e28&label=downloads"></a>
+  <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm totals" src="https://img.shields.io/npm/dt/@brotu/ai?color=111&label=total"></a>
+  <a href="https://github.com/Zorbi-Tech/brotu-sdk/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/@brotu/ai?color=111"></a>
+</p>
+
+<p align="center">
+  Built by <a href="https://x.com/andersonbrdev">@andersonbrdev</a>
+  ·
+  <a href="https://x.com/brotuApp">@brotuApp</a>
+</p>
+
+Kling, Seedance, Wan, Veo, gpt-image and ElevenLabs all speak different HTTP.
+This package is the one `brotuClient` in front of them. 81 models, no proxy,
+no aggregator.
 
 See [CATALOG.md](./CATALOG.md) for every model, with its durations, resolutions,
 aspect ratios and capabilities. That file is generated from the catalog, so it
