@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <strong>One TypeScript client for generative video, image, speech and text.</strong><br>
+  <strong>One TypeScript client for video, image, speech, text and vendor extras.</strong><br>
   You bring the keys. Each call hits the vendor's own API.
 </p>
 
@@ -23,13 +23,9 @@
   <a href="https://x.com/brotuApp">@brotuApp</a>
 </p>
 
-Kling, Seedance, Wan, Veo, gpt-image and ElevenLabs all speak different HTTP.
-This package is the one `brotuClient` in front of them. 81 models, no proxy,
-no aggregator.
+Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different HTTP. This package is one `brotuClient` in front of them. No proxy.
 
-See [CATALOG.md](./CATALOG.md) for every model, with its durations, resolutions,
-aspect ratios and capabilities. That file is generated from the catalog, so it
-cannot drift from what the code actually supports.
+97 models: 37 video, 29 image, 12 speech, 19 text. Full table in [CATALOG.md](./CATALOG.md). That file is generated from the catalog, so it cannot drift from what the code supports.
 
 ## Install
 
@@ -45,7 +41,7 @@ npm i @brotu/ai
 pnpm add @brotu/ai
 ```
 
-## Use
+## Client
 
 ```ts
 import { brotuClient } from "@brotu/ai";
@@ -53,9 +49,37 @@ import { brotuClient } from "@brotu/ai";
 const ai = brotuClient({
   providers: {
     kling: { apiKey: process.env.KLING_API_KEY! },
+    byteplus: { apiKey: process.env.ARK_API_KEY! },
+    google: { apiKey: process.env.GEMINI_API_KEY! },
+    openai: { apiKey: process.env.OPENAI_API_KEY! },
+    qwen: { apiKey: process.env.QWEN_API_KEY! },
+    elevenlabs: { apiKey: process.env.ELEVENLABS_API_KEY! },
   },
 });
+```
 
+Only configured providers appear in `ai.models()`.
+
+Every public call returns `{ data, error }`. `data` is unusable until you narrow on `error`.
+
+| Surface | Methods |
+|---|---|
+| `ai.video` | `submit` / `generate` |
+| `ai.image` | `submit` / `generate` |
+| `ai.text` | `submit` / `generate` |
+| `ai.audio` | `submit` / `generate` |
+| `ai.jobs` | `poll` / `wait` |
+| `ai.estimateCost` | units, and USD when verified |
+| `ai.kling` | `motionControl`, `omniVideo`, `avatar`, `outpainting`, `imageOmni` |
+| `ai.google` | `omniVideo` (conversational refine) |
+
+`ai.kling` and `ai.google` exist only when that key is set.
+
+## Video
+
+`submit` returns a job handle. `generate` waits. Video takes minutes, so do not `generate` inside a request handler.
+
+```ts
 const { data: job, error } = await ai.video.submit({
   model: "kling/v2-6",
   prompt: "a cat wearing sunglasses, cinematic",
@@ -64,69 +88,161 @@ const { data: job, error } = await ai.video.submit({
 });
 
 if (error) return console.error(error.code, error.message);
-await db.jobs.insert(job); // serializable. Put it anywhere.
-```
+await db.jobs.insert(job);
 
-## Nothing throws
-
-Every call returns `{ data, error }`. `data` is unusable until you narrow on
-`error`, so a failure is not something you can forget to handle.
-
-```ts
-const { data, error } = await ai.jobs.wait(job);
-if (error) {
-  if (error.code === "timeout") return retryLater(job); // still running
-  throw new Error(error.message);
-}
+const { data } = await ai.jobs.wait(job);
 data.outputs[0].url;
 ```
 
-Error codes: `unknown_model`, `missing_key`, `unsupported_provider`,
-`invalid_request`, `provider_error`, `timeout`.
+Image-to-video is the same shape with `imageUrl`.
 
-## Jobs, not blocking calls
-
-Video generation takes minutes, so the primary API is submit-then-poll. A job
-handle is plain JSON: store it, and any later process can pick it up.
+## Image
 
 ```ts
-const { data: job } = await ai.video.submit({ model: "kling/v2-6", prompt });
-
-// later, another process, another day
-const { data: snapshot } = await ai.jobs.poll(job); // one check, no waiting
-const { data: result } = await ai.jobs.wait(job);   // poll until it settles
-```
-
-`generate()` exists as the convenient version of the same thing, but it holds the
-call open for the whole run. Fine in a script, wrong in a request handler.
-
-## Storage
-
-Provider result URLs expire. Give the client a bucket and finished outputs are
-copied into it, with `data.outputs[].url` pointing at your copy and the original
-kept in `sourceUrl`.
-
-```ts
-const ai = brotuClient({
-  providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
-  storage: {
-    bucket: "my-bucket",
-    region: "us-east-2",
-    accessKeyId: process.env.S3_KEY!,
-    secretAccessKey: process.env.S3_SECRET!,
-    endpoint: "https://….r2.cloudflarestorage.com", // R2, MinIO, any S3 API
-    publicUrl: "https://cdn.example.com",           // set it, and nothing is signed
-  },
+const { data, error } = await ai.image.generate({
+  model: "gpt-image-2",
+  prompt: "a ginger cat on a windowsill, soft light",
+  quality: "medium",
 });
 ```
 
-If one output fails to copy it keeps its provider URL rather than failing the
-whole generation. `@aws-sdk/client-s3` is an optional peer dependency, loaded
-only when you configure storage.
+OpenAI and Gemini return a data URI. Give the client `storage` if you want a real URL.
 
-## Regions and self-hosting
+## Text
 
-Every provider has a default host. Override it per client:
+```ts
+const { data, error } = await ai.text.generate({
+  model: "gpt-5.6-luna",
+  prompt: "summarize this in two sentences",
+  systemPrompt: "be brief",
+  maxTokens: 200,
+});
+
+data?.outputs[0].raw?.text;
+```
+
+OpenAI: `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` on the Responses API.
+Gemini: `gemini-3.7-flash` and the current ladder on the Interactions API.
+Qwen: `qwen3.8-max`, `qwen-plus`, `qwen-turbo`, and the rest.
+
+Pass `referenceImages` for vision. The output is `data:text/plain` plus `raw.text`. Token totals are only known after the call, so `estimateCost` reports the rate and leaves `usd` null.
+
+## Audio
+
+`prompt` is the spoken text.
+
+```ts
+const { data, error } = await ai.audio.generate({
+  model: "gemini-3.1-flash-tts-preview",
+  prompt: "Say cheerfully: good morning",
+  voice: "Puck",
+});
+```
+
+Gemini TTS: 30 official voices, default `Kore`.
+Qwen: `Cherry`, `Ethan`, and the rest on `qwen3-tts-flash`.
+ElevenLabs: you must pass `voice`. There is no default.
+
+Realtime / Live WebSocket models are not on this surface.
+
+## Jobs
+
+```ts
+const { data: snapshot } = await ai.jobs.poll(job);
+const { data: result } = await ai.jobs.wait(job, { timeoutMs: 420_000 });
+
+if (result === undefined && snapshot?.status === "pending") {
+  // still running
+}
+```
+
+Error codes: `unknown_model`, `missing_key`, `unsupported_provider`, `invalid_request`, `provider_error`, `timeout`.
+
+## Motion control, avatars, omni
+
+Not on `ai.video`. A shared signature would be a lie.
+
+```ts
+if (!ai.kling) throw new Error("needs a kling key");
+
+const { data: motion } = await ai.kling.motionControl({
+  model: "kling-2.6",
+  imageUrl: "https://example.com/character.png",
+  videoUrl: "https://example.com/dance.mp4",
+  characterOrientation: "video",
+  resolution: "1080p",
+});
+
+const { data: talking } = await ai.kling.avatar({
+  imageUrl: "https://example.com/portrait.png",
+  soundFileUrl: "https://example.com/voice.mp3",
+  prompt: "warm, speaking to camera",
+  mode: "pro",
+});
+
+const { data: omni } = await ai.kling.omniVideo({
+  model: "kling-3.0-omni",
+  prompt: "@hero walks through @backdrop",
+  references: [
+    { type: "refer_image", url: "https://example.com/hero.png", id: "hero" },
+    { type: "refer_image", url: "https://example.com/street.png", id: "backdrop" },
+  ],
+  duration: 10,
+  aspectRatio: "9:16",
+});
+
+await ai.kling.outpainting({
+  imageUrl: "https://example.com/square.png",
+  up: 0,
+  down: 0,
+  left: 0.5,
+  right: 0.5,
+  prompt: "continue the street",
+});
+```
+
+Google Omni is the one model you refine by talking to the previous result:
+
+```ts
+if (!ai.google) throw new Error("needs a google key");
+
+const first = await ai.google.omniVideo({
+  model: "gemini-omni-flash-preview",
+  prompt: "a cat walks through rain at night",
+});
+
+await ai.google.omniVideo({
+  model: "gemini-omni-flash-preview",
+  prompt: "make it dawn, keep the camera",
+  previousInteractionId: first.data?.interactionId,
+});
+```
+
+## Cost and storage
+
+```ts
+const { data } = await ai.estimateCost("video", {
+  model: "kling/v3",
+  prompt: "x",
+  duration: 5,
+  resolution: "720p",
+});
+```
+
+Provider URLs expire. Pass `storage` (any S3 API) and outputs land in your bucket. `outputs[].url` is your copy; `sourceUrl` is the original. `@aws-sdk/client-s3` is an optional peer.
+
+```ts
+storage: {
+  bucket: "my-bucket",
+  region: "us-east-2",
+  accessKeyId: process.env.S3_KEY!,
+  secretAccessKey: process.env.S3_SECRET!,
+  endpoint: "https://....r2.cloudflarestorage.com",
+  publicUrl: "https://cdn.example.com",
+}
+```
+
+## Regions and extra models
 
 ```ts
 providers: {
@@ -134,20 +250,10 @@ providers: {
 }
 ```
 
-## Adding a model
-
-Models are data. Register your own, or patch a built-in one:
-
 ```ts
 import { registerModels } from "@brotu/ai";
 
-registerModels([
-  { id: "kling/v3", provider: "kling", /* … */ },
-]);
+registerModels([{ id: "kling/v3", provider: "kling" /* ... */ }]);
 ```
 
-## Not in here
-
-Credits, quotas, accounts and job persistence are product concerns, not client
-concerns. Metering belongs on a server, where it can be trusted, not in an SDK
-running on the caller's machine.
+Credits, quotas, accounts and job persistence stay on your server. This package maps params, polls if needed, and hands back URLs.
