@@ -1,0 +1,517 @@
+import { BytePlusAdapter } from "./adapters/byteplus.adapter";
+import { ElevenLabsAdapter } from "./adapters/elevenlabs.adapter";
+import { GoogleAdapter } from "./adapters/google.adapter";
+import { KlingAdapter } from "./adapters/kling.adapter";
+import { OpenAIAdapter } from "./adapters/openai.adapter";
+import { QwenAdapter } from "./adapters/qwen.adapter";
+import {
+	getAvailableModels,
+	getModel,
+	registerModels,
+	resolveProvider,
+} from "./catalog";
+import type { AIModelConfig } from "./constants/model.types";
+import {
+	type AIError,
+	fail,
+	failFrom,
+	type Generation,
+	ok,
+	type Result,
+} from "./helpers/result";
+import {
+	isPendingJob,
+	type Job,
+	type JobSnapshot,
+	runInSubmitMode,
+} from "./lib/jobs";
+import { createS3Storage, persistOutputs, type Storage } from "./lib/storage";
+import type {
+	AudioGenerationParams,
+	ContentGeneratorPort,
+	CostEstimate,
+	GenerationOutput,
+	GenerationParams,
+	GenerationResult,
+	GenerationType,
+	ImageGenerationParams,
+	TextGenerationParams,
+	VideoGenerationParams,
+} from "./ports/content-generator.port";
+import {
+	type AvatarInput,
+	type ImageOmniInput,
+	KLING_CAPABILITIES,
+	type MotionControlInput,
+	type OmniVideoInput,
+	type OutpaintingInput,
+} from "./providers/kling.models";
+import type { BrotuAIOptions } from "./types";
+
+/** Providers this package ships an adapter for. */
+export const NATIVE_PROVIDERS = [
+	"byteplus",
+	"elevenlabs",
+	"google",
+	"kling",
+	"openai",
+	"qwen",
+] as const;
+
+/** An adapter whose provider queues work and can be asked about it later. */
+interface ResumableAdapter {
+	completeJob(job: Job): Promise<JobSnapshot>;
+}
+
+export interface BrotuAI {
+	image: {
+		/** Queue the work and return a handle. Only the submit is awaited. */
+		submit(params: ImageGenerationParams): Promise<Result<Job>>;
+		/** submit + wait. Convenient, but holds the call open for the whole run. */
+		generate(params: ImageGenerationParams): Promise<Result<Generation>>;
+	};
+	video: {
+		submit(params: VideoGenerationParams): Promise<Result<Job>>;
+		generate(params: VideoGenerationParams): Promise<Result<Generation>>;
+	};
+	text: {
+		submit(params: TextGenerationParams): Promise<Result<Job>>;
+		generate(params: TextGenerationParams): Promise<Result<Generation>>;
+	};
+	/** Speech synthesis. `prompt` is the text to speak. */
+	audio: {
+		submit(params: AudioGenerationParams): Promise<Result<Job>>;
+		generate(params: AudioGenerationParams): Promise<Result<Generation>>;
+	};
+	jobs: {
+		/** Ask once. Returns straight away, settled or not. */
+		poll(job: Job): Promise<Result<JobSnapshot>>;
+		/** Poll until the job settles or `timeoutMs` passes. */
+		wait(
+			job: Job,
+			options?: { timeoutMs?: number },
+		): Promise<Result<Generation>>;
+	};
+	/**
+	 * Google capabilities with no portable equivalent. Present only when a google
+	 * key is configured.
+	 */
+	google?: {
+		/**
+		 * Generate a video, then keep refining it by talking to the result. Pass
+		 * the returned `interactionId` back as `previousInteractionId` and the
+		 * model edits what it made instead of starting over — nothing else in the
+		 * catalog works this way.
+		 */
+		omniVideo(
+			input: VideoGenerationParams & { previousInteractionId?: string },
+		): Promise<Result<{ interactionId?: string; outputs: GenerationOutput[] }>>;
+	};
+	/**
+	 * Kling capabilities with no portable equivalent. They sit under the provider
+	 * name because motion transfer and canvas expansion are not things another
+	 * vendor implements the same way, and a shared signature would be a lie.
+	 * Present only when a kling key is configured.
+	 */
+	kling?: {
+		/** Put your character into another video's movement. */
+		motionControl(input: MotionControlInput): Promise<Result<Job>>;
+		/** The multimodal superset: frames, references, reference video, elements. */
+		omniVideo(input: OmniVideoInput): Promise<Result<Job>>;
+		/** A portrait plus an audio track becomes a talking head. */
+		avatar(input: AvatarInput): Promise<Result<Job>>;
+		/** Extend an image's canvas in any direction. */
+		outpainting(input: OutpaintingInput): Promise<Result<Job>>;
+		/** Compose or edit across up to ten references. */
+		imageOmni(input: ImageOmniInput): Promise<Result<Job>>;
+	};
+	/** Models runnable with the keys given to this client. */
+	models(): AIModelConfig[];
+	/**
+	 * What this generation will be billed for, before running it. Always reports
+	 * the billable units; reports USD only where the catalog carries a verified
+	 * rate, and `usd: null` otherwise.
+	 */
+	estimateCost(
+		type: GenerationType,
+		params: GenerationParams,
+	): Promise<Result<CostEstimate>>;
+}
+
+export function brotuClient(options: BrotuAIOptions): BrotuAI {
+	if (Object.keys(options.providers).length === 0) {
+		throw new Error("brotuClient requires at least one provider API key.");
+	}
+
+	registerModels(options.models);
+
+	const storage: Storage | undefined = options.storage
+		? createS3Storage(options.storage)
+		: undefined;
+	// Outputs live on the provider's URL, which expires. Copy them unless told not to.
+	const shouldPersist = storage && options.storage?.persistOutputs !== false;
+
+	// One adapter per provider: an adapter talks to a single host, the client routes.
+	const adapters = new Map<string, ContentGeneratorPort>();
+
+	/** Route a model to its adapter, reporting the failure rather than throwing. */
+	function route(modelId: string | undefined): Result<{
+		adapter: ContentGeneratorPort;
+		provider: string;
+		model: string;
+	}> {
+		if (!modelId) {
+			return fail({
+				code: "invalid_request",
+				message: "Pass a model id — this SDK ships no implicit default.",
+			});
+		}
+
+		const model = getModel(modelId);
+		if (!model) {
+			return fail({
+				code: "unknown_model",
+				message: `Unknown model "${modelId}".`,
+				model: modelId,
+			});
+		}
+
+		let provider: ReturnType<typeof resolveProvider>;
+		try {
+			provider = resolveProvider(modelId, options);
+		} catch (error) {
+			return failFrom("missing_key", error, { model: modelId });
+		}
+
+		let adapter = adapters.get(provider.id);
+		if (!adapter) {
+			const built = buildAdapter(provider);
+			if (!built) {
+				return fail({
+					code: "unsupported_provider",
+					message: `No adapter ships for provider "${provider.id}". Native providers: ${NATIVE_PROVIDERS.join(", ")}.`,
+					provider: provider.id,
+					model: modelId,
+				});
+			}
+			adapter = built;
+			adapters.set(provider.id, adapter);
+		}
+
+		return ok({ adapter, provider: provider.id, model: modelId });
+	}
+
+	function buildAdapter(provider: {
+		id: string;
+		apiKey: string;
+		baseUrl: string;
+	}): ContentGeneratorPort | undefined {
+		if (provider.id === "kling") {
+			return new KlingAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		if (provider.id === "byteplus") {
+			return new BytePlusAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		if (provider.id === "qwen") {
+			return new QwenAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		if (provider.id === "openai") {
+			return new OpenAIAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		if (provider.id === "elevenlabs") {
+			return new ElevenLabsAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+				defaultVoiceId: options.elevenLabsVoiceId,
+			});
+		}
+		if (provider.id === "google") {
+			return new GoogleAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		return undefined;
+	}
+
+	function generateWith(
+		adapter: ContentGeneratorPort,
+		kind: GenerationType,
+		params: GenerationParams,
+	): Promise<GenerationResult> {
+		if (kind === "image")
+			return adapter.generateImage(params as ImageGenerationParams);
+		if (kind === "video")
+			return adapter.generateVideo(params as VideoGenerationParams);
+		if (kind === "audio")
+			return adapter.generateAudio(params as AudioGenerationParams);
+		return adapter.generateText(params as TextGenerationParams);
+	}
+
+	/** Adapters still speak GenerationResult internally; the seam is here. */
+	async function toGeneration(
+		raw: GenerationResult,
+		metadata?: Record<string, string>,
+	): Promise<Result<Generation>> {
+		if (!raw.success) {
+			return fail({
+				code: "provider_error",
+				message: raw.error ?? "The provider failed without saying why.",
+				provider: raw.provider,
+				model: raw.model,
+			});
+		}
+
+		const outputs =
+			shouldPersist && storage
+				? await persistOutputs(storage, raw.outputs)
+				: raw.outputs;
+
+		return ok({
+			outputs,
+			provider: raw.provider,
+			model: raw.model,
+			processingTimeMs: raw.processingTimeMs,
+			metadata,
+		});
+	}
+
+	async function generate(
+		kind: GenerationType,
+		params: GenerationParams,
+	): Promise<Result<Generation>> {
+		const routed = route(params.model);
+		if (routed.error) return fail(routed.error);
+
+		try {
+			return await toGeneration(
+				await generateWith(routed.data.adapter, kind, params),
+				params.metadata,
+			);
+		} catch (error) {
+			return failFrom("provider_error", error, {
+				provider: routed.data.provider,
+				model: routed.data.model,
+			});
+		}
+	}
+
+	async function submit(
+		kind: GenerationType,
+		params: GenerationParams,
+	): Promise<Result<Job>> {
+		const routed = route(params.model);
+		if (routed.error) return fail(routed.error);
+
+		const base = {
+			provider: routed.data.provider,
+			model: routed.data.model,
+			kind,
+			params,
+			metadata: params.metadata,
+			submittedAt: new Date().toISOString(),
+		};
+
+		try {
+			// Unwinds with a PendingJob as soon as the provider hands back a task id.
+			const raw = await runInSubmitMode(() =>
+				generateWith(routed.data.adapter, kind, params),
+			);
+			// No task id: this provider answered inline, so the job is already done.
+			if (!raw.success) {
+				return fail({
+					code: "provider_error",
+					message: raw.error ?? "The provider rejected the request.",
+					provider: raw.provider,
+					model: raw.model,
+				});
+			}
+			return ok({
+				...base,
+				id: `inline-${base.model}-${base.submittedAt}`,
+				result: raw,
+			});
+		} catch (error) {
+			if (!isPendingJob(error)) {
+				return failFrom("provider_error", error, {
+					provider: base.provider,
+					model: base.model,
+				});
+			}
+			return ok({
+				...base,
+				id: error.taskId,
+				pollEndpoint: error.pollEndpoint,
+			});
+		}
+	}
+
+	async function pollJob(job: Job): Promise<Result<JobSnapshot>> {
+		if (job.result) {
+			return ok(
+				job.result.success
+					? { status: "succeeded", result: job.result }
+					: { status: "failed", error: job.result.error },
+			);
+		}
+
+		const routed = route(job.model);
+		if (routed.error) return fail(routed.error);
+
+		const adapter = routed.data.adapter as Partial<ResumableAdapter> &
+			ContentGeneratorPort;
+		if (typeof adapter.completeJob !== "function") {
+			return fail({
+				code: "unsupported_provider",
+				message: `Provider "${job.provider}" cannot resume a job by handle.`,
+				provider: job.provider,
+			});
+		}
+
+		try {
+			return ok(await adapter.completeJob(job));
+		} catch (error) {
+			return failFrom("provider_error", error, {
+				provider: job.provider,
+				model: job.model,
+			});
+		}
+	}
+
+	/** Only built when a kling key is present, so the namespace tells the truth. */
+	function klingNamespace(): BrotuAI["kling"] {
+		const configured = options.providers.kling;
+		if (!configured) return undefined;
+
+		const adapter = new KlingAdapter({
+			apiKey: configured.apiKey,
+			baseUrl: configured.baseUrl ?? "https://api-singapore.klingai.com",
+		});
+
+		function run<TInput>(name: keyof typeof KLING_CAPABILITIES) {
+			return async (input: TInput): Promise<Result<Job>> => {
+				try {
+					const capability = KLING_CAPABILITIES[name] as unknown as Parameters<
+						typeof adapter.submitCapability<TInput>
+					>[1];
+					return ok(await adapter.submitCapability(name, capability, input));
+				} catch (error) {
+					return failFrom("provider_error", error, { provider: "kling" });
+				}
+			};
+		}
+
+		return {
+			motionControl: run<MotionControlInput>("motionControl"),
+			omniVideo: run<OmniVideoInput>("omniVideo"),
+			avatar: run<AvatarInput>("avatar"),
+			outpainting: run<OutpaintingInput>("outpainting"),
+			imageOmni: run<ImageOmniInput>("imageOmni"),
+		};
+	}
+
+	/** Only built when a google key is present, so the namespace tells the truth. */
+	function googleNamespace(): BrotuAI["google"] {
+		const configured = options.providers.google;
+		if (!configured) return undefined;
+
+		const adapter = new GoogleAdapter({
+			apiKey: configured.apiKey,
+			baseUrl: configured.baseUrl,
+		});
+
+		return {
+			omniVideo: async (input) => {
+				try {
+					return ok(await adapter.omniVideo(input));
+				} catch (error) {
+					return failFrom("provider_error", error, { provider: "google" });
+				}
+			},
+		};
+	}
+
+	return {
+		google: googleNamespace(),
+		kling: klingNamespace(),
+		image: {
+			submit: (params) => submit("image", params),
+			generate: (params) => generate("image", params),
+		},
+		video: {
+			submit: (params) => submit("video", params),
+			generate: (params) => generate("video", params),
+		},
+		text: {
+			submit: (params) => submit("text", params),
+			generate: (params) => generate("text", params),
+		},
+		audio: {
+			submit: (params) => submit("audio", params),
+			generate: (params) => generate("audio", params),
+		},
+		jobs: {
+			poll: pollJob,
+			wait: async (job, waitOptions) => {
+				const deadline = Date.now() + (waitOptions?.timeoutMs ?? 30 * 60_000);
+
+				for (;;) {
+					const polled = await pollJob(job);
+					if (polled.error) return fail(polled.error);
+
+					const snapshot = polled.data;
+					if (snapshot.status === "succeeded" && snapshot.result) {
+						// A job resumed days later still knows what it was tagged with.
+						return toGeneration(snapshot.result, job.metadata);
+					}
+					if (snapshot.status === "failed") {
+						return fail({
+							code: "provider_error",
+							message: snapshot.error ?? "The job failed.",
+							provider: job.provider,
+							model: job.model,
+						});
+					}
+					if (Date.now() >= deadline) {
+						// Not a dead end: the job may still finish, so say so.
+						return fail({
+							code: "timeout",
+							message: `Job ${job.id} is still running. Poll it again later.`,
+							provider: job.provider,
+							model: job.model,
+						});
+					}
+					await new Promise((resolve) => setTimeout(resolve, 3000));
+				}
+			},
+		},
+		models: () => getAvailableModels(options),
+		estimateCost: async (type, params) => {
+			const routed = route(params.model);
+			if (routed.error) return fail(routed.error);
+			try {
+				return ok(await routed.data.adapter.estimateCost(type, params));
+			} catch (error) {
+				return failFrom("provider_error", error, {
+					provider: routed.data.provider,
+					model: routed.data.model,
+				});
+			}
+		},
+	};
+}
+
+export type { AIError, Generation, Result };
+export { getModel };

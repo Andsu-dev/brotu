@@ -1,0 +1,1451 @@
+{
+	"$comment": "Generated from the TypeScript catalog. Do not edit by hand — run docs:json.",
+	"generatedFrom": "sdks/node",
+	"providers": [
+		"byteplus",
+		"elevenlabs",
+		"google",
+		"kling",
+		"openai",
+		"qwen"
+	],
+	"counts": {
+		"audio": 9,
+		"image": 29,
+		"video": 37,
+		"text": 6
+	},
+	"models": [
+		{
+			"id": "cosyvoice-v3-flash",
+			"provider": "qwen",
+			"category": "audio",
+			"name": "cosyvoice-v3-flash",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "character",
+				"usdPerUnit": 0.000015
+			},
+			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "dola-seedream-5-0-pro-260628",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "dola seedream 5 0 pro",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.045
+			}
+		},
+		{
+			"id": "dreamina-seedance-2-0-260128",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 2 0",
+			"inputType": "image_optional",
+			"minDuration": 4,
+			"maxDuration": 15,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480p": 0.0673,
+					"720p": 0.1512,
+					"1080p": 0.3742,
+					"4k": 0.7776
+				},
+				"usdPerUnit": 0.1512
+			}
+		},
+		{
+			"id": "dreamina-seedance-2-0-fast-260128",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 2 0 fast",
+			"inputType": "image_optional",
+			"minDuration": 4,
+			"maxDuration": 15,
+			"resolutions": [
+				"480p",
+				"720p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480p": 0.0538,
+					"720p": 0.121
+				},
+				"usdPerUnit": 0.121
+			}
+		},
+		{
+			"id": "dreamina-seedance-2-0-mini-260615",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 2 0 mini",
+			"inputType": "image_optional",
+			"minDuration": 4,
+			"maxDuration": 15,
+			"resolutions": [
+				"480p",
+				"720p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480p": 0.0336,
+					"720p": 0.0756
+				},
+				"usdPerUnit": 0.0756
+			}
+		},
+		{
+			"id": "dreamina-seedance-2-5-260628",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 2 5",
+			"inputType": "image_optional",
+			"minDuration": 4,
+			"maxDuration": 30,
+			"resolutions": [
+				"480p",
+				"720p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480p": 0.1028,
+					"720p": 0.2311,
+					"1080p": 0.5686
+				},
+				"usdPerUnit": 0.2311
+			}
+		},
+		{
+			"id": "eleven_flash_v2_5",
+			"provider": "elevenlabs",
+			"category": "audio",
+			"name": "eleven_flash_v2_5",
+			"inputType": "text_only",
+			"description": "~75ms latency, for real-time and agent use. Up to 40,000 characters, 32 languages."
+		},
+		{
+			"id": "eleven_multilingual_v2",
+			"provider": "elevenlabs",
+			"category": "audio",
+			"name": "eleven_multilingual_v2",
+			"inputType": "text_only",
+			"description": "Lifelike and consistent across languages. The API default. Up to 10,000 characters, 29 languages."
+		},
+		{
+			"id": "eleven_v3",
+			"provider": "elevenlabs",
+			"category": "audio",
+			"name": "eleven_v3",
+			"inputType": "text_only",
+			"description": "Most expressive; widest language coverage. Up to 5,000 characters, 70 languages."
+		},
+		{
+			"id": "gemini-2.5-flash-image",
+			"provider": "google",
+			"category": "image",
+			"name": "gemini-2.5-flash-image",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K"
+			],
+			"pricing": {
+				"usdPerUnit": 0.039,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "gemini-3-pro-image",
+			"provider": "google",
+			"category": "image",
+			"name": "gemini-3-pro-image",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"pricing": {
+				"usdPerUnit": 0.134,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "gemini-3.1-flash-image",
+			"provider": "google",
+			"category": "image",
+			"name": "gemini-3.1-flash-image",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"pricing": {
+				"usdPerUnit": 0.067,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "gemini-3.1-flash-lite-image",
+			"provider": "google",
+			"category": "image",
+			"name": "gemini-3.1-flash-lite-image",
+			"inputType": "image_optional",
+			"resolutions": [
+				"512px",
+				"1K",
+				"2K"
+			],
+			"pricing": {
+				"usdPerUnit": 0.0336,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "gemini-omni-flash-preview",
+			"provider": "google",
+			"category": "video",
+			"name": "gemini-omni-flash-preview",
+			"inputType": "image_optional",
+			"durations": [
+				10
+			],
+			"minDuration": 10,
+			"maxDuration": 10,
+			"resolutions": [
+				"720p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16"
+			]
+		},
+		{
+			"id": "gpt-image-1",
+			"provider": "openai",
+			"category": "image",
+			"name": "gpt-image-1",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1024x1024",
+				"1024x1536",
+				"1536x1024",
+				"auto"
+			],
+			"pricing": {
+				"usdPerUnit": 0.042,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "gpt-image-1.5",
+			"provider": "openai",
+			"category": "image",
+			"name": "gpt-image-1.5",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1024x1024",
+				"1024x1536",
+				"1536x1024",
+				"auto"
+			],
+			"pricing": {
+				"usdPerUnit": 0.04,
+				"unit": "image"
+			},
+			"description": "Deprecated — OpenAI shuts this down on 2026-12-01."
+		},
+		{
+			"id": "gpt-image-2",
+			"provider": "openai",
+			"category": "image",
+			"name": "gpt-image-2",
+			"inputType": "image_optional",
+			"pricing": {
+				"usdPerUnit": 0.053,
+				"unit": "image"
+			}
+		},
+		{
+			"id": "happyhorse-1.0-i2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.0-i2v",
+			"inputType": "image_required",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "happyhorse-1.0-r2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.0-r2v",
+			"inputType": "image_required",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "happyhorse-1.0-t2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.0-t2v",
+			"inputType": "text_only",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "happyhorse-1.0-video-edit",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.0-video-edit",
+			"inputType": "video_required",
+			"resolutions": [
+				"720P",
+				"1080P"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720P": 0.14,
+					"1080P": 0.24
+				},
+				"usdPerUnit": 0.14
+			}
+		},
+		{
+			"id": "happyhorse-1.1-i2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.1-i2v",
+			"inputType": "image_required",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480P": 0.07,
+					"720P": 0.14,
+					"1080P": 0.18
+				},
+				"usdPerUnit": 0.14
+			}
+		},
+		{
+			"id": "happyhorse-1.1-r2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.1-r2v",
+			"inputType": "image_required",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480P": 0.07,
+					"720P": 0.14,
+					"1080P": 0.18
+				},
+				"usdPerUnit": 0.14
+			}
+		},
+		{
+			"id": "happyhorse-1.1-t2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "happyhorse-1.1-t2v",
+			"inputType": "text_only",
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"480P": 0.07,
+					"720P": 0.14,
+					"1080P": 0.18
+				},
+				"usdPerUnit": 0.14
+			}
+		},
+		{
+			"id": "kling/image-v1",
+			"provider": "kling",
+			"category": "image",
+			"name": "Kling 1 (image)",
+			"inputType": "text_only",
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/image-v1-5",
+			"provider": "kling",
+			"category": "image",
+			"name": "Kling 1-5 (image)",
+			"inputType": "text_only",
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/image-v2",
+			"provider": "kling",
+			"category": "image",
+			"name": "Kling 2 (image)",
+			"inputType": "text_only",
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/image-v2-1",
+			"provider": "kling",
+			"category": "image",
+			"name": "Kling 2-1 (image)",
+			"inputType": "text_only",
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/image-v2-new",
+			"provider": "kling",
+			"category": "image",
+			"name": "Kling 2-new (image)",
+			"inputType": "text_only",
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/tts",
+			"provider": "kling",
+			"category": "audio",
+			"name": "Kling TTS",
+			"inputType": "text_only",
+			"description": "Preset voices: genshin_vindi2, zhinen_xuesheng, ai_shatang, genshin_klee2, genshin_kirara, ai_kaiya, chat1_female_new-3, cartoon-boy-07, cartoon-girl-01, uk_boy1, uk_man2, PeppaPig_platform, ai_huangzhong_712, ai_huangyaoshi_712, ai_laoguowang_712, chengshu_jiejie, you_pingjing, calm_story1, laopopo_speech02, heainainai_speech02. Cloned voices from your account work too."
+		},
+		{
+			"id": "kling/v1",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 1",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			]
+		},
+		{
+			"id": "kling/v1-5",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 1-5",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.056,
+					"1080p": 0.098
+				},
+				"usdPerUnit": 0.056
+			}
+		},
+		{
+			"id": "kling/v1-6",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 1-6",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.056,
+					"1080p": 0.098
+				},
+				"usdPerUnit": 0.056
+			}
+		},
+		{
+			"id": "kling/v2-1",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 2-1",
+			"inputType": "image_required",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.056,
+					"1080p": 0.098
+				},
+				"usdPerUnit": 0.056
+			}
+		},
+		{
+			"id": "kling/v2-1-master",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 2-1-master",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"1080p": 0.28
+				},
+				"usdPerUnit": 0.28
+			}
+		},
+		{
+			"id": "kling/v2-5-turbo",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 2.5-turbo",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"resolutions": [
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.042,
+					"1080p": 0.07
+				},
+				"usdPerUnit": 0.042
+			}
+		},
+		{
+			"id": "kling/v2-6",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 2.6",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"resolutions": [
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.042,
+					"1080p": 0.07
+				},
+				"usdPerUnit": 0.042
+			}
+		},
+		{
+			"id": "kling/v2-master",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 2-master",
+			"inputType": "image_optional",
+			"durations": [
+				5,
+				10
+			],
+			"minDuration": 5,
+			"maxDuration": 10,
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"1080p": 0.28
+				},
+				"usdPerUnit": 0.28
+			}
+		},
+		{
+			"id": "kling/v3",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 3.0",
+			"inputType": "image_optional",
+			"durations": [
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				10,
+				12,
+				15
+			],
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.084,
+					"1080p": 0.112,
+					"4k": 0.42
+				},
+				"usdPerUnit": 0.084
+			}
+		},
+		{
+			"id": "kling/v3-turbo",
+			"provider": "kling",
+			"category": "video",
+			"name": "Kling 3.0-turbo",
+			"inputType": "image_optional",
+			"durations": [
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				10,
+				12,
+				15
+			],
+			"minDuration": 3,
+			"maxDuration": 15,
+			"resolutions": [
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16",
+				"1:1"
+			],
+			"pricing": {
+				"unit": "second",
+				"byResolution": {
+					"720p": 0.112,
+					"1080p": 0.14
+				},
+				"usdPerUnit": 0.112
+			}
+		},
+		{
+			"id": "qwen-audio-3.0-tts-flash",
+			"provider": "qwen",
+			"category": "audio",
+			"name": "qwen-audio-3.0-tts-flash",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "character",
+				"usdPerUnit": 0.000015
+			},
+			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "qwen-audio-3.0-tts-plus",
+			"provider": "qwen",
+			"category": "audio",
+			"name": "qwen-audio-3.0-tts-plus",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "character",
+				"usdPerUnit": 0.00003
+			},
+			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "qwen-image-2.0",
+			"provider": "qwen",
+			"category": "image",
+			"name": "qwen-image-2.0",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.035
+			}
+		},
+		{
+			"id": "qwen-image-2.0-pro",
+			"provider": "qwen",
+			"category": "image",
+			"name": "qwen-image-2.0-pro",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.075
+			}
+		},
+		{
+			"id": "qwen-image-3.0",
+			"provider": "qwen",
+			"category": "image",
+			"name": "qwen-image-3.0",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.03
+			}
+		},
+		{
+			"id": "qwen-image-3.0-pro",
+			"provider": "qwen",
+			"category": "image",
+			"name": "qwen-image-3.0-pro",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.04
+			}
+		},
+		{
+			"id": "qwen-image-max",
+			"provider": "qwen",
+			"category": "image",
+			"name": "qwen-image-max",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "qwen-max",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen-max",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.0000075
+			}
+		},
+		{
+			"id": "qwen-plus",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen-plus",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.000003
+			}
+		},
+		{
+			"id": "qwen-turbo",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen-turbo",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 4.0000000000000003e-7
+			}
+		},
+		{
+			"id": "qwen3-tts-flash",
+			"provider": "qwen",
+			"category": "audio",
+			"name": "qwen3-tts-flash",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "character",
+				"usdPerUnit": 0.000015
+			},
+			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "qwen3-tts-instruct-flash",
+			"provider": "qwen",
+			"category": "audio",
+			"name": "qwen3-tts-instruct-flash",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "character",
+				"usdPerUnit": 0.000015
+			},
+			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "qwen3.7-flash",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen3.7-flash",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 1.3e-7
+			}
+		},
+		{
+			"id": "qwen3.7-plus",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen3.7-plus",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.0000016000000000000001
+			}
+		},
+		{
+			"id": "qwen3.8-max",
+			"provider": "qwen",
+			"category": "text",
+			"name": "qwen3.8-max",
+			"inputType": "text_only",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.000006
+			}
+		},
+		{
+			"id": "seedance-1-0-lite-i2v-250428",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 1 0 lite i2v",
+			"inputType": "image_required",
+			"minDuration": 2,
+			"maxDuration": 12,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seedance-1-0-lite-t2v-250428",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 1 0 lite t2v",
+			"inputType": "text_only",
+			"minDuration": 2,
+			"maxDuration": 12,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seedance-1-0-pro-250528",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 1 0 pro",
+			"inputType": "image_optional",
+			"minDuration": 2,
+			"maxDuration": 12,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seedance-1-0-pro-fast-251015",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 1 0 pro fast",
+			"inputType": "image_optional",
+			"minDuration": 2,
+			"maxDuration": 12,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seedance-1-5-pro-251215",
+			"provider": "byteplus",
+			"category": "video",
+			"name": "seedance 1 5 pro",
+			"inputType": "image_optional",
+			"minDuration": 4,
+			"maxDuration": 12,
+			"resolutions": [
+				"480p",
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seededit-3-0-i2i-250628",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seededit 3 0 i2i",
+			"inputType": "image_required",
+			"resolutions": [
+				"1K",
+				"2K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.03
+			}
+		},
+		{
+			"id": "seedream-3-0-t2i-250415",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seedream 3 0 t2i",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			]
+		},
+		{
+			"id": "seedream-4-0-20260415",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seedream 4 0",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.03
+			}
+		},
+		{
+			"id": "seedream-4-0-250828",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seedream 4 0",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.03
+			}
+		},
+		{
+			"id": "seedream-4-5-251128",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seedream 4 5",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.04
+			}
+		},
+		{
+			"id": "seedream-5-0-260128",
+			"provider": "byteplus",
+			"category": "image",
+			"name": "seedream 5 0",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"aspectRatios": [
+				"16:9",
+				"4:3",
+				"1:1",
+				"3:4",
+				"9:16",
+				"21:9"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.035
+			}
+		},
+		{
+			"id": "veo-3.1-fast-generate-preview",
+			"provider": "google",
+			"category": "video",
+			"name": "veo-3.1-fast-generate-preview",
+			"inputType": "image_optional",
+			"durations": [
+				4,
+				6,
+				8
+			],
+			"minDuration": 4,
+			"maxDuration": 8,
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16"
+			],
+			"pricing": {
+				"unit": "second",
+				"usdPerUnit": 0.1,
+				"byResolution": {
+					"720p": 0.1,
+					"1080p": 0.12,
+					"4k": 0.3
+				}
+			}
+		},
+		{
+			"id": "veo-3.1-generate-preview",
+			"provider": "google",
+			"category": "video",
+			"name": "veo-3.1-generate-preview",
+			"inputType": "image_optional",
+			"durations": [
+				4,
+				6,
+				8
+			],
+			"minDuration": 4,
+			"maxDuration": 8,
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16"
+			],
+			"pricing": {
+				"unit": "second",
+				"usdPerUnit": 0.4,
+				"byResolution": {
+					"720p": 0.4,
+					"1080p": 0.4,
+					"4k": 0.6
+				}
+			}
+		},
+		{
+			"id": "veo-3.1-lite-generate-preview",
+			"provider": "google",
+			"category": "video",
+			"name": "veo-3.1-lite-generate-preview",
+			"inputType": "image_optional",
+			"durations": [
+				4,
+				6,
+				8
+			],
+			"minDuration": 4,
+			"maxDuration": 8,
+			"resolutions": [
+				"720p",
+				"1080p"
+			],
+			"aspectRatios": [
+				"16:9",
+				"9:16"
+			],
+			"pricing": {
+				"unit": "second",
+				"usdPerUnit": 0.05,
+				"byResolution": {
+					"720p": 0.05,
+					"1080p": 0.08
+				}
+			}
+		},
+		{
+			"id": "wan2.2-kf2v-flash",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.2-kf2v-flash",
+			"inputType": "image_required",
+			"durations": [
+				5
+			],
+			"minDuration": 5,
+			"maxDuration": 5,
+			"resolutions": [
+				"480P",
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "wan2.6-i2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.6-i2v",
+			"inputType": "image_required",
+			"minDuration": 2,
+			"maxDuration": 15,
+			"resolutions": [
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "wan2.6-i2v-flash",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.6-i2v-flash",
+			"inputType": "image_required",
+			"minDuration": 2,
+			"maxDuration": 15,
+			"resolutions": [
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "wan2.6-image",
+			"provider": "qwen",
+			"category": "image",
+			"name": "wan2.6-image",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "wan2.6-r2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.6-r2v",
+			"inputType": "image_required",
+			"minDuration": 2,
+			"maxDuration": 10
+		},
+		{
+			"id": "wan2.6-t2i",
+			"provider": "qwen",
+			"category": "image",
+			"name": "wan2.6-t2i",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "wan2.6-t2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.6-t2v",
+			"inputType": "text_only",
+			"minDuration": 2,
+			"maxDuration": 15
+		},
+		{
+			"id": "wan2.7-i2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.7-i2v",
+			"inputType": "image_required",
+			"minDuration": 2,
+			"maxDuration": 15,
+			"resolutions": [
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "wan2.7-image",
+			"provider": "qwen",
+			"category": "image",
+			"name": "wan2.7-image",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K"
+			]
+		},
+		{
+			"id": "wan2.7-image-pro",
+			"provider": "qwen",
+			"category": "image",
+			"name": "wan2.7-image-pro",
+			"inputType": "image_optional",
+			"resolutions": [
+				"1K",
+				"2K",
+				"4K"
+			],
+			"pricing": {
+				"unit": "image",
+				"usdPerUnit": 0.075
+			}
+		},
+		{
+			"id": "wan2.7-t2v",
+			"provider": "qwen",
+			"category": "video",
+			"name": "wan2.7-t2v",
+			"inputType": "text_only",
+			"minDuration": 2,
+			"maxDuration": 15,
+			"resolutions": [
+				"720P",
+				"1080P"
+			]
+		},
+		{
+			"id": "z-image-turbo",
+			"provider": "qwen",
+			"category": "image",
+			"name": "z-image-turbo",
+			"inputType": "image_optional"
+		}
+	]
+}
