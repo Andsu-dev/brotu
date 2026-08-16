@@ -10,10 +10,10 @@
 		"qwen"
 	],
 	"counts": {
-		"audio": 9,
+		"audio": 12,
 		"image": 29,
 		"video": 37,
-		"text": 6
+		"text": 19
 	},
 	"models": [
 		{
@@ -198,6 +198,13 @@
 			"description": "Most expressive; widest language coverage. Up to 5,000 characters, 70 languages."
 		},
 		{
+			"id": "gemini-2.5-flash",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-2.5-flash",
+			"inputType": "image_optional"
+		},
+		{
 			"id": "gemini-2.5-flash-image",
 			"provider": "google",
 			"category": "image",
@@ -211,6 +218,43 @@
 				"usdPerUnit": 0.039,
 				"unit": "image"
 			}
+		},
+		{
+			"id": "gemini-2.5-flash-lite",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-2.5-flash-lite",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "gemini-2.5-flash-preview-tts",
+			"provider": "google",
+			"category": "audio",
+			"name": "gemini-2.5-flash-preview-tts",
+			"inputType": "text_only",
+			"description": "Voices: Zephyr, Puck, Charon, Kore, Fenrir, Leda, Orus, Aoede, Callirrhoe, Autonoe, Enceladus, Iapetus, Umbriel, Algieba, Despina, Erinome, Algenib, Rasalgethi, Laomedeia, Achernar, Alnilam, Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi, Vindemiatrix, Sadachbia, Sadaltager, Sulafat"
+		},
+		{
+			"id": "gemini-2.5-pro",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-2.5-pro",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "gemini-2.5-pro-preview-tts",
+			"provider": "google",
+			"category": "audio",
+			"name": "gemini-2.5-pro-preview-tts",
+			"inputType": "text_only",
+			"description": "Voices: Zephyr, Puck, Charon, Kore, Fenrir, Leda, Orus, Aoede, Callirrhoe, Autonoe, Enceladus, Iapetus, Umbriel, Algieba, Despina, Erinome, Algenib, Rasalgethi, Laomedeia, Achernar, Alnilam, Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi, Vindemiatrix, Sadachbia, Sadaltager, Sulafat"
+		},
+		{
+			"id": "gemini-3-flash-preview",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3-flash-preview",
+			"inputType": "image_optional"
 		},
 		{
 			"id": "gemini-3-pro-image",
@@ -245,6 +289,13 @@
 			}
 		},
 		{
+			"id": "gemini-3.1-flash-lite",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.1-flash-lite",
+			"inputType": "image_optional"
+		},
+		{
 			"id": "gemini-3.1-flash-lite-image",
 			"provider": "google",
 			"category": "image",
@@ -258,6 +309,65 @@
 			"pricing": {
 				"usdPerUnit": 0.0336,
 				"unit": "image"
+			}
+		},
+		{
+			"id": "gemini-3.1-flash-tts-preview",
+			"provider": "google",
+			"category": "audio",
+			"name": "gemini-3.1-flash-tts-preview",
+			"inputType": "text_only",
+			"description": "Voices: Zephyr, Puck, Charon, Kore, Fenrir, Leda, Orus, Aoede, Callirrhoe, Autonoe, Enceladus, Iapetus, Umbriel, Algieba, Despina, Erinome, Algenib, Rasalgethi, Laomedeia, Achernar, Alnilam, Schedar, Gacrux, Pulcherrima, Achird, Zubenelgenubi, Vindemiatrix, Sadachbia, Sadaltager, Sulafat"
+		},
+		{
+			"id": "gemini-3.1-pro-preview",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.1-pro-preview",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.000012
+			}
+		},
+		{
+			"id": "gemini-3.5-flash",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.5-flash",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.000009
+			}
+		},
+		{
+			"id": "gemini-3.5-flash-lite",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.5-flash-lite",
+			"inputType": "image_optional"
+		},
+		{
+			"id": "gemini-3.6-flash",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.6-flash",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.00000375
+			}
+		},
+		{
+			"id": "gemini-3.7-flash",
+			"provider": "google",
+			"category": "text",
+			"name": "gemini-3.7-flash",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.00000375
 			}
 		},
 		{
@@ -278,6 +388,39 @@
 				"16:9",
 				"9:16"
 			]
+		},
+		{
+			"id": "gpt-5.6-luna",
+			"provider": "openai",
+			"category": "text",
+			"name": "gpt-5.6-luna",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.0000012
+			}
+		},
+		{
+			"id": "gpt-5.6-sol",
+			"provider": "openai",
+			"category": "text",
+			"name": "gpt-5.6-sol",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.00003
+			}
+		},
+		{
+			"id": "gpt-5.6-terra",
+			"provider": "openai",
+			"category": "text",
+			"name": "gpt-5.6-terra",
+			"inputType": "image_optional",
+			"pricing": {
+				"unit": "token",
+				"usdPerUnit": 0.000012
+			}
 		},
 		{
 			"id": "gpt-image-1",
