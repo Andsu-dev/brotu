@@ -42,6 +42,10 @@ const ai = brotuClient({
     google: { apiKey: process.env.GEMINI_API_KEY! },
     openai: { apiKey: process.env.OPENAI_API_KEY! },
   },
+  webhook: {
+    url: "https://my.app/hooks/brotu",
+    secret: process.env.BROTU_WEBHOOK_SECRET,
+  },
 });
 ```
 
@@ -56,6 +60,7 @@ The portable surface is the same on every vendor:
 | `ai.text` | chat / completions |
 | `ai.audio` | text-to-speech |
 | `ai.jobs` | poll or wait on a stored handle |
+| `ai.webhook` | register a URL the client POSTs when a generation settles |
 | `ai.estimateCost` | units (and USD, when the catalog has a verified rate) |
 
 Vendor-only work sits under a namespace that only exists when that key is set:
@@ -181,6 +186,50 @@ const { data: result } = await ai.jobs.wait(job, { timeoutMs: 420_000 });
 ```
 
 `generate()` holds the connection open for the whole run. Fine in a script. Wrong behind HTTP.
+
+## Webhook
+
+Register a URL on the client. When `generate`, `jobs.wait` or a terminal `jobs.poll` settles, the SDK POSTs the result there. A down hook never fails the generation.
+
+```ts
+const ai = brotuClient({
+  providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
+  webhook: {
+    url: "https://my.app/hooks/brotu",
+    secret: process.env.BROTU_WEBHOOK_SECRET,
+  },
+});
+
+// later, or instead of the constructor option
+ai.webhook.set("https://my.app/hooks/brotu");
+ai.webhook.clear();
+```
+
+Per request, if one generation should go somewhere else:
+
+```ts
+await ai.video.submit({
+  model: "kling/v2-6",
+  prompt: "a cat",
+  webhook: "https://my.app/hooks/this-one",
+});
+```
+
+The POST is JSON. Check `x-brotu-event` and, if you set a secret, `x-brotu-webhook-secret`.
+
+```json
+{
+  "event": "generation.succeeded",
+  "jobId": "task-1",
+  "provider": "kling",
+  "model": "kling/v2-6",
+  "kind": "video",
+  "outputs": [{ "url": "https://…", "mimeType": "video/mp4" }],
+  "completedAt": "2026-08-16T12:00:00.000Z"
+}
+```
+
+`generation.failed` carries `error: { code, message }` and no outputs. Timeouts and routing errors (unknown model, missing key) do not fire the hook — nothing came back.
 
 Error codes: `unknown_model`, `missing_key`, `unsupported_provider`, `invalid_request`, `provider_error`, `timeout`.
 

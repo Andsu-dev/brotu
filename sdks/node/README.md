@@ -55,6 +55,10 @@ const ai = brotuClient({
     qwen: { apiKey: process.env.QWEN_API_KEY! },
     elevenlabs: { apiKey: process.env.ELEVENLABS_API_KEY! },
   },
+  webhook: {
+    url: "https://my.app/hooks/brotu",
+    secret: process.env.BROTU_WEBHOOK_SECRET,
+  },
 });
 ```
 
@@ -69,6 +73,7 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 | `ai.text` | `submit` / `generate` |
 | `ai.audio` | `submit` / `generate` |
 | `ai.jobs` | `poll` / `wait` |
+| `ai.webhook` | `set` / `clear` / `get` |
 | `ai.estimateCost` | units, and USD when verified |
 | `ai.kling` | `motionControl`, `omniVideo`, `avatar`, `outpainting`, `imageOmni` |
 | `ai.google` | `omniVideo` (conversational refine) |
@@ -155,6 +160,41 @@ if (result === undefined && snapshot?.status === "pending") {
   // still running
 }
 ```
+
+## Webhook
+
+Register a URL on the client. When `generate`, `jobs.wait` or a terminal `jobs.poll` settles, the SDK POSTs the result there. A down hook never fails the generation.
+
+```ts
+ai.webhook.set("https://my.app/hooks/brotu");
+ai.webhook.clear();
+```
+
+Per request, if one generation should go somewhere else:
+
+```ts
+await ai.video.submit({
+  model: "kling/v2-6",
+  prompt: "a cat",
+  webhook: "https://my.app/hooks/this-one",
+});
+```
+
+The POST is JSON. Check `x-brotu-event` and, if you set a secret, `x-brotu-webhook-secret`.
+
+```json
+{
+  "event": "generation.succeeded",
+  "jobId": "task-1",
+  "provider": "kling",
+  "model": "kling/v2-6",
+  "kind": "video",
+  "outputs": [{ "url": "https://…", "mimeType": "video/mp4" }],
+  "completedAt": "2026-08-16T12:00:00.000Z"
+}
+```
+
+`generation.failed` carries `error: { code, message }` and no outputs. Timeouts and routing errors do not fire the hook.
 
 Error codes: `unknown_model`, `missing_key`, `unsupported_provider`, `invalid_request`, `provider_error`, `timeout`.
 
