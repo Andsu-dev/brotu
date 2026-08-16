@@ -59,8 +59,11 @@ export {
 	ELEVENLABS_OUTPUT_FORMATS,
 } from "./providers/elevenlabs.models";
 export {
+	GOOGLE_AUDIO_MODELS,
 	GOOGLE_CATALOG,
 	GOOGLE_IMAGE_MODELS,
+	GOOGLE_TEXT_MODELS,
+	GOOGLE_TTS_VOICES,
 	GOOGLE_VIDEO_MODELS,
 } from "./providers/google.models";
 export type { KlingModelBinding } from "./providers/kling.models";
@@ -80,6 +83,7 @@ export {
 export {
 	OPENAI_CATALOG,
 	OPENAI_IMAGE_MODELS,
+	OPENAI_TEXT_MODELS,
 } from "./providers/openai.models";
 export {
 	QWEN_AUDIO_MODELS,

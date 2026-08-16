@@ -13,6 +13,7 @@ import type {
 } from "../ports/content-generator.port";
 import {
 	OPENAI_IMAGE_MODELS,
+	OPENAI_TEXT_MODELS,
 	type OpenAIImageBinding,
 } from "../providers/openai.models";
 import { estimateFor } from "./estimate";
@@ -44,7 +45,7 @@ interface OpenAIImageResponse {
 export class OpenAIAdapter implements ContentGeneratorPort {
 	readonly providerName = "openai";
 	// No video: the Videos API shuts down on 24 September 2026.
-	readonly supportedTypes: GenerationType[] = ["image"];
+	readonly supportedTypes: GenerationType[] = ["image", "text"];
 
 	private readonly opts: OpenAIAdapterOptions;
 
@@ -193,8 +194,106 @@ export class OpenAIAdapter implements ContentGeneratorPort {
 		throw new Error("OpenAI has no speech synthesis wired up here.");
 	}
 
-	generateText(_params: TextGenerationParams): Promise<GenerationResult> {
-		throw new Error("The OpenAI adapter here covers images only.");
+	private textBody(params: TextGenerationParams): Record<string, unknown> {
+		const content = params.referenceImages?.length
+			? [
+					{ type: "input_text", text: params.prompt },
+					...params.referenceImages.map((url) => ({
+						type: "input_image",
+						image_url: url,
+					})),
+				]
+			: params.prompt;
+
+		const input: unknown[] = [];
+		if (params.systemPrompt) {
+			input.push({ role: "system", content: params.systemPrompt });
+		}
+		input.push({ role: "user", content });
+
+		return {
+			model: params.model,
+			input,
+			...(params.maxTokens ? { max_output_tokens: params.maxTokens } : {}),
+			...(params.temperature !== undefined
+				? { temperature: params.temperature }
+				: {}),
+			...(params.topP !== undefined ? { top_p: params.topP } : {}),
+			...(params.providerOptions?.openai ?? {}),
+		};
+	}
+
+	async generateText(params: TextGenerationParams): Promise<GenerationResult> {
+		const startedAt = Date.now();
+		const modelId = params.model ?? "";
+
+		const failure = (error: string): GenerationResult => ({
+			success: false,
+			outputs: [],
+			creditsUsed: 0,
+			provider: this.providerName,
+			model: modelId,
+			processingTimeMs: Date.now() - startedAt,
+			error,
+		});
+
+		if (!(modelId in OPENAI_TEXT_MODELS)) {
+			return failure(
+				`"${modelId}" is not an OpenAI text model. Known: ${Object.keys(OPENAI_TEXT_MODELS).join(", ")}.`,
+			);
+		}
+
+		try {
+			const response = await fetch(`${this.baseUrl}/v1/responses`, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${this.opts.apiKey}`,
+					"Content-Type": "application/json",
+					...(this.opts.organization
+						? { "OpenAI-Organization": this.opts.organization }
+						: {}),
+				},
+				body: JSON.stringify(this.textBody(params)),
+			});
+
+			const payload = (await response.json()) as {
+				output_text?: string;
+				output?: Array<{
+					content?: Array<{ type?: string; text?: string }>;
+				}>;
+				usage?: { output_tokens?: number };
+				error?: { message?: string };
+			};
+			if (payload.error) throw new Error(payload.error.message);
+			if (!response.ok) {
+				throw new Error(`OpenAI returned ${response.status}.`);
+			}
+
+			const text =
+				payload.output_text ??
+				payload.output
+					?.flatMap((item) => item.content ?? [])
+					.find((part) => part.type === "output_text" || part.text)?.text;
+
+			if (!text) return failure("OpenAI returned no text.");
+
+			return {
+				success: true,
+				outputs: [
+					{
+						url: `data:text/plain;base64,${Buffer.from(text).toString("base64")}`,
+						mimeType: "text/plain",
+						raw: { text, tokens: payload.usage?.output_tokens },
+					},
+				],
+				creditsUsed: 0,
+				provider: this.providerName,
+				model: modelId,
+				processingTimeMs: Date.now() - startedAt,
+			};
+		} catch (error) {
+			return failure(error instanceof Error ? error.message : String(error));
+		}
 	}
 
 	/** Synchronous provider: there is never a queued job to come back to. */
@@ -227,14 +326,21 @@ export class OpenAIAdapter implements ContentGeneratorPort {
 	}
 
 	supportsModel(model: string): boolean {
-		return model in OPENAI_IMAGE_MODELS;
+		return model in OPENAI_IMAGE_MODELS || model in OPENAI_TEXT_MODELS;
 	}
 
 	getAvailableModels() {
-		return Object.keys(OPENAI_IMAGE_MODELS).map((id) => ({
-			id,
-			name: id,
-			type: "image" as GenerationType,
-		}));
+		return [
+			...Object.keys(OPENAI_IMAGE_MODELS).map((id) => ({
+				id,
+				name: id,
+				type: "image" as GenerationType,
+			})),
+			...Object.keys(OPENAI_TEXT_MODELS).map((id) => ({
+				id,
+				name: id,
+				type: "text" as GenerationType,
+			})),
+		];
 	}
 }

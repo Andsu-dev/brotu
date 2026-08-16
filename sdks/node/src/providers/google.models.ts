@@ -97,6 +97,81 @@ export const GOOGLE_VIDEO_MODELS: Record<string, GoogleVideoBinding> = {
 	},
 };
 
+/**
+ * Gemini text, through the same Interactions API as images. Rates are USD per
+ * million output tokens, list price on the Gemini Developer API paid tier.
+ * Promotional intro rates (3.6 / 3.7 through 31 Dec 2026) are what the
+ * pricing page shows today; a guess at the 2027 step-up would go stale.
+ */
+export const GOOGLE_TEXT_MODELS: Record<
+	string,
+	{ usdPerMillionOutput?: number }
+> = {
+	"gemini-3.7-flash": { usdPerMillionOutput: 3.75 },
+	"gemini-3.6-flash": { usdPerMillionOutput: 3.75 },
+	"gemini-3.5-flash": { usdPerMillionOutput: 9 },
+	"gemini-3.5-flash-lite": {},
+	"gemini-3.1-flash-lite": {},
+	"gemini-3.1-pro-preview": { usdPerMillionOutput: 12 },
+	"gemini-3-flash-preview": {},
+	"gemini-2.5-pro": {},
+	"gemini-2.5-flash": {},
+	"gemini-2.5-flash-lite": {},
+};
+
+/**
+ * Official prebuilt voices for Gemini TTS. The Interactions API takes one of
+ * these in `generation_config.speech_config[].voice`.
+ */
+export const GOOGLE_TTS_VOICES = [
+	"Zephyr",
+	"Puck",
+	"Charon",
+	"Kore",
+	"Fenrir",
+	"Leda",
+	"Orus",
+	"Aoede",
+	"Callirrhoe",
+	"Autonoe",
+	"Enceladus",
+	"Iapetus",
+	"Umbriel",
+	"Algieba",
+	"Despina",
+	"Erinome",
+	"Algenib",
+	"Rasalgethi",
+	"Laomedeia",
+	"Achernar",
+	"Alnilam",
+	"Schedar",
+	"Gacrux",
+	"Pulcherrima",
+	"Achird",
+	"Zubenelgenubi",
+	"Vindemiatrix",
+	"Sadachbia",
+	"Sadaltager",
+	"Sulafat",
+] as const;
+
+export type GoogleTtsVoice = (typeof GOOGLE_TTS_VOICES)[number];
+
+/**
+ * Gemini TTS. Audio-only in, audio-only out, on the Interactions API.
+ * Token rates are not listed next to the model cards the way Veo is, so
+ * the catalog leaves them unset rather than guessing.
+ */
+export const GOOGLE_AUDIO_MODELS: Record<
+	string,
+	{ voices: readonly string[] }
+> = {
+	"gemini-3.1-flash-tts-preview": { voices: GOOGLE_TTS_VOICES },
+	"gemini-2.5-flash-preview-tts": { voices: GOOGLE_TTS_VOICES },
+	"gemini-2.5-pro-preview-tts": { voices: GOOGLE_TTS_VOICES },
+};
+
 export const GOOGLE_CATALOG: AIModelConfig[] = [
 	...Object.entries(GOOGLE_IMAGE_MODELS).map(
 		([id, binding]) =>
@@ -137,6 +212,40 @@ export const GOOGLE_CATALOG: AIModelConfig[] = [
 								usdPerUnit: binding.usdPerSecond,
 								byResolution: binding.usdByResolution,
 							},
+			}) satisfies AIModelConfig,
+	),
+	...Object.entries(GOOGLE_TEXT_MODELS).map(
+		([id, binding]) =>
+			({
+				id,
+				name: id,
+				category: "text",
+				inputType: "image_optional",
+				nodeTypes: ["text"],
+				creditsPerUnit: 0,
+				creditUnit: "token",
+				provider: "google",
+				pricing:
+					binding.usdPerMillionOutput === undefined
+						? undefined
+						: {
+								unit: "token",
+								usdPerUnit: binding.usdPerMillionOutput / 1_000_000,
+							},
+			}) satisfies AIModelConfig,
+	),
+	...Object.entries(GOOGLE_AUDIO_MODELS).map(
+		([id, binding]) =>
+			({
+				id,
+				name: id,
+				category: "audio",
+				inputType: "text_only",
+				nodeTypes: ["text"],
+				creditsPerUnit: 0,
+				creditUnit: "character",
+				provider: "google",
+				description: `Voices: ${binding.voices.join(", ")}`,
 			}) satisfies AIModelConfig,
 	),
 ];

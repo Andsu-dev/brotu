@@ -18,7 +18,10 @@ import {
 	type VideoGenerationParams,
 } from "../ports/content-generator.port";
 import {
+	GOOGLE_AUDIO_MODELS,
 	GOOGLE_IMAGE_MODELS,
+	GOOGLE_TEXT_MODELS,
+	GOOGLE_TTS_VOICES,
 	GOOGLE_VIDEO_MODELS,
 } from "../providers/google.models";
 import { estimateFor } from "./estimate";
@@ -35,8 +38,12 @@ const POLL_INTERVAL_MS = 10_000;
 const DEFAULT_MAX_POLL_ATTEMPTS = 120;
 
 interface InteractionResponse {
+	output_text?: string;
 	output_image?: { data?: string };
-	steps?: Array<{ content?: Array<{ type?: string; data?: string }> }>;
+	output_audio?: { data?: string; mime_type?: string };
+	steps?: Array<{
+		content?: Array<{ type?: string; data?: string; text?: string }>;
+	}>;
 	error?: { message?: string; status?: string };
 }
 
@@ -70,7 +77,12 @@ interface VeoOperation {
  */
 export class GoogleAdapter implements ContentGeneratorPort {
 	readonly providerName = "google";
-	readonly supportedTypes: GenerationType[] = ["image", "video"];
+	readonly supportedTypes: GenerationType[] = [
+		"image",
+		"video",
+		"text",
+		"audio",
+	];
 
 	private readonly opts: GoogleAdapterOptions;
 
@@ -485,12 +497,168 @@ export class GoogleAdapter implements ContentGeneratorPort {
 		return this.runVideo(params);
 	}
 
-	generateAudio(_params: AudioGenerationParams): Promise<GenerationResult> {
-		throw new Error("Google has no speech synthesis wired up here.");
+	private textBody(
+		modelId: string,
+		params: TextGenerationParams,
+	): Record<string, unknown> {
+		const input: Array<Record<string, unknown>> = [
+			{ type: "text", text: params.prompt },
+		];
+		for (const image of params.referenceImages ?? []) {
+			const [meta, data] = image.split(",");
+			input.push({
+				type: "image",
+				mime_type: meta?.match(/data:([^;]+)/)?.[1] ?? "image/png",
+				data: data ?? image,
+			});
+		}
+
+		return {
+			model: modelId,
+			input,
+			...(params.systemPrompt ? { instructions: params.systemPrompt } : {}),
+			generation_config: {
+				...(params.maxTokens ? { max_output_tokens: params.maxTokens } : {}),
+				...(params.temperature !== undefined
+					? { temperature: params.temperature }
+					: {}),
+				...(params.topP !== undefined ? { top_p: params.topP } : {}),
+			},
+			...(params.providerOptions?.google ?? {}),
+		};
 	}
 
-	generateText(_params: TextGenerationParams): Promise<GenerationResult> {
-		throw new Error("The Google adapter here covers image and video only.");
+	private speechBody(
+		modelId: string,
+		params: AudioGenerationParams,
+		voice: string,
+	): Record<string, unknown> {
+		return {
+			model: modelId,
+			input: params.prompt,
+			response_format: { type: "audio" },
+			generation_config: {
+				speech_config: [{ voice }],
+			},
+			...(params.providerOptions?.google ?? {}),
+		};
+	}
+
+	async generateText(params: TextGenerationParams): Promise<GenerationResult> {
+		const startedAt = Date.now();
+		const modelId = params.model ?? "";
+
+		const failure = (error: string): GenerationResult => ({
+			success: false,
+			outputs: [],
+			creditsUsed: 0,
+			provider: this.providerName,
+			model: modelId,
+			processingTimeMs: Date.now() - startedAt,
+			error,
+		});
+
+		if (!(modelId in GOOGLE_TEXT_MODELS)) {
+			return failure(
+				`"${modelId}" is not a Gemini text model. Known: ${Object.keys(GOOGLE_TEXT_MODELS).join(", ")}.`,
+			);
+		}
+
+		try {
+			const payload = await this.request<InteractionResponse>(
+				INTERACTIONS_PATH,
+				{
+					method: "POST",
+					body: this.textBody(modelId, params),
+				},
+			);
+
+			const text =
+				payload.output_text ??
+				payload.steps
+					?.flatMap((step) => step.content ?? [])
+					.find((part) => part.type === "text" || part.text)?.text;
+
+			if (!text) return failure("Google returned no text.");
+
+			return {
+				success: true,
+				outputs: [
+					{
+						url: `data:text/plain;base64,${Buffer.from(text).toString("base64")}`,
+						mimeType: "text/plain",
+						raw: { text },
+					},
+				],
+				creditsUsed: 0,
+				provider: this.providerName,
+				model: modelId,
+				processingTimeMs: Date.now() - startedAt,
+			};
+		} catch (error) {
+			return failure(error instanceof Error ? error.message : String(error));
+		}
+	}
+
+	async generateAudio(
+		params: AudioGenerationParams,
+	): Promise<GenerationResult> {
+		const startedAt = Date.now();
+		const modelId = params.model ?? "";
+
+		const failure = (error: string): GenerationResult => ({
+			success: false,
+			outputs: [],
+			creditsUsed: 0,
+			provider: this.providerName,
+			model: modelId,
+			processingTimeMs: Date.now() - startedAt,
+			error,
+		});
+
+		const binding = GOOGLE_AUDIO_MODELS[modelId];
+		if (!binding) {
+			return failure(
+				`"${modelId}" is not a Gemini speech model. Known: ${Object.keys(GOOGLE_AUDIO_MODELS).join(", ")}.`,
+			);
+		}
+
+		const voice = params.voice ?? "Kore";
+		if (!binding.voices.includes(voice)) {
+			return failure(
+				`Gemini TTS offers ${GOOGLE_TTS_VOICES.join(", ")}, not "${voice}".`,
+			);
+		}
+
+		try {
+			const payload = await this.request<InteractionResponse>(
+				INTERACTIONS_PATH,
+				{
+					method: "POST",
+					body: this.speechBody(modelId, params, voice),
+				},
+			);
+
+			const data = payload.output_audio?.data;
+			if (!data) return failure("Google returned no audio.");
+
+			return {
+				success: true,
+				outputs: [
+					{
+						url: `data:audio/wav;base64,${data}`,
+						mimeType: "audio/wav",
+						raw: { inline: true, voice },
+					},
+				],
+				creditsUsed: 0,
+				provider: this.providerName,
+				model: modelId,
+				processingTimeMs: Date.now() - startedAt,
+			};
+		} catch (error) {
+			return failure(error instanceof Error ? error.message : String(error));
+		}
 	}
 
 	async estimateCost(
@@ -501,7 +669,12 @@ export class GoogleAdapter implements ContentGeneratorPort {
 	}
 
 	supportsModel(model: string): boolean {
-		return model in GOOGLE_IMAGE_MODELS || model in GOOGLE_VIDEO_MODELS;
+		return (
+			model in GOOGLE_IMAGE_MODELS ||
+			model in GOOGLE_VIDEO_MODELS ||
+			model in GOOGLE_TEXT_MODELS ||
+			model in GOOGLE_AUDIO_MODELS
+		);
 	}
 
 	getAvailableModels() {
@@ -515,6 +688,16 @@ export class GoogleAdapter implements ContentGeneratorPort {
 				id,
 				name: id,
 				type: "video" as GenerationType,
+			})),
+			...Object.keys(GOOGLE_TEXT_MODELS).map((id) => ({
+				id,
+				name: id,
+				type: "text" as GenerationType,
+			})),
+			...Object.keys(GOOGLE_AUDIO_MODELS).map((id) => ({
+				id,
+				name: id,
+				type: "audio" as GenerationType,
 			})),
 		];
 	}

@@ -47,22 +47,49 @@ export const OPENAI_IMAGE_MODELS: Record<string, OpenAIImageBinding> = {
 	},
 };
 
-export const OPENAI_CATALOG: AIModelConfig[] = Object.entries(
-	OPENAI_IMAGE_MODELS,
-).map(([id, binding]) => ({
-	id,
-	name: id,
-	category: "image",
-	inputType: "image_optional",
-	nodeTypes: ["image_gen"],
-	creditsPerUnit: 0,
-	creditUnit: "image",
-	supportedResolutions: binding.sizes === "any" ? undefined : binding.sizes,
-	provider: "openai",
-	// Medium is the sane middle; `quality: auto` can silently pick high, which
-	// is 35x the low tier.
-	pricing: { usdPerUnit: binding.usd.medium, unit: "image" },
-	description: binding.shutdownOn
-		? `Deprecated — OpenAI shuts this down on ${binding.shutdownOn}.`
-		: undefined,
-}));
+/**
+ * Current GPT-5.6 text ladder, as published on the Models page. Rates are
+ * USD per million output tokens on the standard paid tier.
+ */
+export const OPENAI_TEXT_MODELS: Record<
+	string,
+	{ usdPerMillionOutput: number }
+> = {
+	"gpt-5.6-sol": { usdPerMillionOutput: 30 },
+	"gpt-5.6-terra": { usdPerMillionOutput: 12 },
+	"gpt-5.6-luna": { usdPerMillionOutput: 1.2 },
+};
+
+export const OPENAI_CATALOG: AIModelConfig[] = [
+	...Object.entries(OPENAI_IMAGE_MODELS).map(([id, binding]) => ({
+		id,
+		name: id,
+		category: "image" as const,
+		inputType: "image_optional" as const,
+		nodeTypes: ["image_gen" as const],
+		creditsPerUnit: 0,
+		creditUnit: "image" as const,
+		supportedResolutions: binding.sizes === "any" ? undefined : binding.sizes,
+		provider: "openai",
+		// Medium is the sane middle; `quality: auto` can silently pick high, which
+		// is 35x the low tier.
+		pricing: { usdPerUnit: binding.usd.medium, unit: "image" as const },
+		description: binding.shutdownOn
+			? `Deprecated — OpenAI shuts this down on ${binding.shutdownOn}.`
+			: undefined,
+	})),
+	...Object.entries(OPENAI_TEXT_MODELS).map(([id, binding]) => ({
+		id,
+		name: id,
+		category: "text" as const,
+		inputType: "image_optional" as const,
+		nodeTypes: ["text" as const],
+		creditsPerUnit: 0,
+		creditUnit: "token" as const,
+		provider: "openai",
+		pricing: {
+			unit: "token" as const,
+			usdPerUnit: binding.usdPerMillionOutput / 1_000_000,
+		},
+	})),
+];

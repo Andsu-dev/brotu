@@ -2,8 +2,16 @@ import { describe, expect, it } from "bun:test";
 import { GoogleAdapter } from "../adapters/google.adapter";
 import { OpenAIAdapter } from "../adapters/openai.adapter";
 import { brotuClient } from "../client";
-import { GOOGLE_VIDEO_MODELS } from "../providers/google.models";
-import { OPENAI_IMAGE_MODELS } from "../providers/openai.models";
+import {
+	GOOGLE_AUDIO_MODELS,
+	GOOGLE_TEXT_MODELS,
+	GOOGLE_TTS_VOICES,
+	GOOGLE_VIDEO_MODELS,
+} from "../providers/google.models";
+import {
+	OPENAI_IMAGE_MODELS,
+	OPENAI_TEXT_MODELS,
+} from "../providers/openai.models";
 
 const openai = new OpenAIAdapter({ apiKey: "sk-test" });
 const google = new GoogleAdapter({ apiKey: "goog-test" });
@@ -203,5 +211,153 @@ describe("gemini omni", () => {
 		expect(
 			brotuClient({ providers: { kling: { apiKey: "k" } } }).google,
 		).toBeUndefined();
+	});
+});
+
+describe("openai text", () => {
+	function textBody(params: Record<string, unknown>) {
+		const inner = openai as unknown as {
+			textBody: (p: unknown) => Record<string, unknown>;
+		};
+		return inner.textBody(params) as {
+			model: string;
+			input: Array<{ role: string; content: unknown }>;
+			max_output_tokens?: number;
+			temperature?: number;
+		};
+	}
+
+	it("lists the current 5.6 ladder and nothing retired", () => {
+		expect(Object.keys(OPENAI_TEXT_MODELS).sort()).toEqual([
+			"gpt-5.6-luna",
+			"gpt-5.6-sol",
+			"gpt-5.6-terra",
+		]);
+	});
+
+	it("sends the Responses API envelope, not chat completions", () => {
+		const body = textBody({
+			model: "gpt-5.6-luna",
+			prompt: "hello",
+			systemPrompt: "be brief",
+			maxTokens: 64,
+		});
+		expect(body.model).toBe("gpt-5.6-luna");
+		expect(body.max_output_tokens).toBe(64);
+		expect(body.input[0]).toEqual({ role: "system", content: "be brief" });
+		expect(body.input[1]).toEqual({ role: "user", content: "hello" });
+	});
+
+	it("attaches reference images as input_image parts", () => {
+		const body = textBody({
+			model: "gpt-5.6-sol",
+			prompt: "what is this",
+			referenceImages: ["https://x/a.png"],
+		});
+		expect(body.input[0]?.content).toEqual([
+			{ type: "input_text", text: "what is this" },
+			{ type: "input_image", image_url: "https://x/a.png" },
+		]);
+	});
+
+	it("refuses an image model on the text path", async () => {
+		const result = await openai.generateText({
+			model: "gpt-image-2",
+			prompt: "x",
+		});
+		expect(result.success).toBe(false);
+		expect(result.error).toMatch(/not an OpenAI text model/);
+	});
+});
+
+describe("gemini text", () => {
+	function textBody(params: Record<string, unknown>) {
+		const inner = google as unknown as {
+			textBody: (id: string, p: unknown) => Record<string, unknown>;
+		};
+		return inner.textBody("gemini-3.7-flash", params) as {
+			model: string;
+			input: Array<{ type: string; text?: string }>;
+			instructions?: string;
+			generation_config: Record<string, unknown>;
+		};
+	}
+
+	it("lists the current Gemini text ladder", () => {
+		expect(GOOGLE_TEXT_MODELS["gemini-3.7-flash"]).toBeDefined();
+		expect(GOOGLE_TEXT_MODELS["gemini-3.1-pro-preview"]).toBeDefined();
+		expect("gemini-2.0-flash" in GOOGLE_TEXT_MODELS).toBe(false);
+	});
+
+	it("goes through Interactions, with system text as instructions", () => {
+		const body = textBody({
+			prompt: "hello",
+			systemPrompt: "be brief",
+			maxTokens: 32,
+			temperature: 0.2,
+		});
+		expect(body.model).toBe("gemini-3.7-flash");
+		expect(body.instructions).toBe("be brief");
+		expect(body.generation_config.max_output_tokens).toBe(32);
+		expect(body.generation_config.temperature).toBe(0.2);
+		expect(body.input[0]).toEqual({ type: "text", text: "hello" });
+	});
+
+	it("refuses a Veo id on the text path", async () => {
+		const result = await google.generateText({
+			model: "veo-3.1-generate-preview",
+			prompt: "x",
+		});
+		expect(result.success).toBe(false);
+		expect(result.error).toMatch(/not a Gemini text model/);
+	});
+});
+
+describe("gemini tts", () => {
+	function speechBody(voice = "Kore") {
+		const inner = google as unknown as {
+			speechBody: (
+				id: string,
+				p: unknown,
+				voice: string,
+			) => Record<string, unknown>;
+		};
+		return inner.speechBody(
+			"gemini-3.1-flash-tts-preview",
+			{ prompt: "hello" },
+			voice,
+		) as {
+			model: string;
+			input: string;
+			response_format: { type: string };
+			generation_config: { speech_config: Array<{ voice: string }> };
+		};
+	}
+
+	it("lists the three current TTS models", () => {
+		expect(Object.keys(GOOGLE_AUDIO_MODELS).sort()).toEqual([
+			"gemini-2.5-flash-preview-tts",
+			"gemini-2.5-pro-preview-tts",
+			"gemini-3.1-flash-tts-preview",
+		]);
+		expect(GOOGLE_TTS_VOICES).toContain("Kore");
+		expect(GOOGLE_TTS_VOICES).toHaveLength(30);
+	});
+
+	it("asks the Interactions API for audio with a named voice", () => {
+		const body = speechBody("Puck");
+		expect(body.response_format.type).toBe("audio");
+		expect(body.generation_config.speech_config[0]?.voice).toBe("Puck");
+		expect(body.input).toBe("hello");
+	});
+
+	it("rejects a voice the model does not offer", async () => {
+		const result = await google.generateAudio({
+			model: "gemini-3.1-flash-tts-preview",
+			prompt: "hello",
+			voice: "not-a-voice",
+		});
+		expect(result.success).toBe(false);
+		expect(result.error).toMatch(/not "not-a-voice"/);
 	});
 });
