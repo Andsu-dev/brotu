@@ -7,6 +7,20 @@ See [CATALOG.md](./CATALOG.md) for every model, with its durations, resolutions,
 aspect ratios and capabilities. That file is generated from the catalog, so it
 cannot drift from what the code actually supports.
 
+## Install
+
+```bash
+bun add @brotu/ai
+```
+
+```bash
+npm i @brotu/ai
+```
+
+```bash
+pnpm add @brotu/ai
+```
+
 ## Use
 
 ```ts
@@ -26,7 +40,7 @@ const { data: job, error } = await ai.video.submit({
 });
 
 if (error) return console.error(error.code, error.message);
-await db.jobs.insert(job); // serializable — put it anywhere
+await db.jobs.insert(job); // serializable. Put it anywhere.
 ```
 
 ## Nothing throws
@@ -60,7 +74,7 @@ const { data: result } = await ai.jobs.wait(job);   // poll until it settles
 ```
 
 `generate()` exists as the convenient version of the same thing, but it holds the
-call open for the whole run — fine in a script, wrong in a request handler.
+call open for the whole run. Fine in a script, wrong in a request handler.
 
 ## Storage
 
@@ -111,5 +125,5 @@ registerModels([
 ## Not in here
 
 Credits, quotas, accounts and job persistence are product concerns, not client
-concerns. Metering belongs on a server, where it can be trusted — not in an SDK
+concerns. Metering belongs on a server, where it can be trusted, not in an SDK
 running on the caller's machine.
