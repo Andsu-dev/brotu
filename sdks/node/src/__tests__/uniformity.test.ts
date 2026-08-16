@@ -148,7 +148,10 @@ describe("every catalog entry describes itself the same way", () => {
 
 describe("caller metadata survives the round trip", () => {
 	it("rides on the job, so a resumed one still knows what it was for", async () => {
-		const ai = brotuClient({ providers: { kling: { apiKey: "k" } } });
+		const ai = brotuClient({
+			apiKey: "brotu_sk_test",
+			providers: { kling: { apiKey: "k" } },
+		});
 
 		// Routing fails before any network call, which is all this needs to prove
 		// the tag is attached to the request rather than to the response.
@@ -163,6 +166,7 @@ describe("caller metadata survives the round trip", () => {
 
 describe("cost estimates are honest", () => {
 	const ai = brotuClient({
+		apiKey: "brotu_sk_test",
 		providers: {
 			kling: { apiKey: "k" },
 			byteplus: { apiKey: "b" },
@@ -255,6 +259,7 @@ describe("cost estimates are honest", () => {
 
 describe("speech", () => {
 	const ai = brotuClient({
+		apiKey: "brotu_sk_test",
 		providers: {
 			qwen: { apiKey: "q" },
 			elevenlabs: { apiKey: "e" },
@@ -264,7 +269,7 @@ describe("speech", () => {
 	it("offers voice models from more than one vendor", () => {
 		const audio = ai.models().filter((m) => m.category === "audio");
 		expect(audio.length).toBeGreaterThan(0);
-		expect(new Set(audio.map((m) => m.provider)).size).toBe(2);
+		expect(new Set(audio.map((m) => m.provider)).size).toBeGreaterThanOrEqual(2);
 	});
 
 	it("prices speech exactly, because characters are known before asking", async () => {
@@ -304,7 +309,10 @@ describe("speech", () => {
 });
 
 describe("text", () => {
-	const ai = brotuClient({ providers: { qwen: { apiKey: "q" } } });
+	const ai = brotuClient({
+		apiKey: "brotu_sk_test",
+		providers: { qwen: { apiKey: "q" } },
+	});
 
 	it("cannot price text up front, and says so instead of guessing", async () => {
 		// The bill depends on how much the model writes back.

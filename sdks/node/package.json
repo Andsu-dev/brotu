@@ -1,6 +1,6 @@
 {
 	"name": "@brotu/ai",
-	"version": "0.3.0",
+	"version": "0.5.0",
 	"type": "module",
 	"main": "./dist/index.cjs",
 	"exports": {
@@ -66,11 +66,11 @@
 	"module": "./dist/index.js",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Zorbi-Tech/brotu-sdk.git",
+		"url": "git+https://github.com/Zorbi-Tech/brotu.git",
 		"directory": "sdks/node"
 	},
-	"homepage": "https://github.com/Zorbi-Tech/brotu-sdk",
+	"homepage": "https://github.com/Zorbi-Tech/brotu",
 	"bugs": {
-		"url": "https://github.com/Zorbi-Tech/brotu-sdk/issues"
+		"url": "https://github.com/Zorbi-Tech/brotu/issues"
 	}
 }

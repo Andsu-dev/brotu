@@ -1,20 +1,20 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Zorbi-Tech/brotu-sdk/main/docs/assets/logo.svg">
-    <img src="https://raw.githubusercontent.com/Zorbi-Tech/brotu-sdk/main/docs/assets/logo-black.svg" alt="Brotu" width="280">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Zorbi-Tech/brotu/main/docs/assets/logo.svg">
+    <img src="https://raw.githubusercontent.com/Zorbi-Tech/brotu/main/docs/assets/logo-black.svg" alt="Brotu" width="280">
   </picture>
 </p>
 
 <p align="center">
   <strong>One TypeScript client for video, image, speech, text and vendor extras.</strong><br>
-  You bring the keys. Each call hits the vendor's own API.
+  Your Brotu key. Vendor keys generate on the vendor.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm version" src="https://img.shields.io/npm/v/@brotu/ai?color=ef5e28"></a>
   <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@brotu/ai?color=ef5e28&label=downloads"></a>
   <a href="https://www.npmjs.com/package/@brotu/ai"><img alt="npm totals" src="https://img.shields.io/npm/dt/@brotu/ai?color=111&label=total"></a>
-  <a href="https://github.com/Zorbi-Tech/brotu-sdk/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/@brotu/ai?color=111"></a>
+  <a href="https://github.com/Zorbi-Tech/brotu/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/@brotu/ai?color=111"></a>
 </p>
 
 <p align="center">
@@ -23,7 +23,9 @@
   <a href="https://x.com/brotuApp">@brotuApp</a>
 </p>
 
-Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different HTTP. This package is one `brotuClient` in front of them. No proxy.
+Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different HTTP. This package is one `brotuClient` in front of them.
+
+Get your key (`brotu_sk_…`) at [brotu.app](https://brotu.app). Pass a vendor key you already have and that model hits the vendor. Everything else generates on Brotu.
 
 97 models: 37 video, 29 image, 12 speech, 19 text. Full table in [CATALOG.md](./CATALOG.md). That file is generated from the catalog, so it cannot drift from what the code supports.
 
@@ -47,6 +49,7 @@ pnpm add @brotu/ai
 import { brotuClient } from "@brotu/ai";
 
 const ai = brotuClient({
+  apiKey: process.env.BROTU_API_KEY!, // brotu_sk_… from https://brotu.app
   providers: {
     kling: { apiKey: process.env.KLING_API_KEY! },
     byteplus: { apiKey: process.env.ARK_API_KEY! },
@@ -62,16 +65,16 @@ const ai = brotuClient({
 });
 ```
 
-Only configured providers appear in `ai.models()`.
+Your Brotu key opens the catalog. A vendor key, when you have one, generates on that vendor.
 
 Every public call returns `{ data, error }`. `data` is unusable until you narrow on `error`.
 
 | Surface | Methods |
 |---|---|
-| `ai.video` | `submit` / `generate` |
-| `ai.image` | `submit` / `generate` |
-| `ai.text` | `submit` / `generate` |
-| `ai.audio` | `submit` / `generate` |
+| `ai.video` | `submit` / `generate` / `list` |
+| `ai.image` | `submit` / `generate` / `list` |
+| `ai.text` | `submit` / `generate` / `list` |
+| `ai.audio` | `submit` / `generate` / `list` |
 | `ai.jobs` | `poll` / `wait` |
 | `ai.webhook` | `set` / `clear` / `get` |
 | `ai.estimateCost` | units, and USD when verified |
@@ -79,6 +82,23 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 | `ai.google` | `omniVideo` (conversational refine) |
 
 `ai.kling` and `ai.google` exist only when that key is set.
+
+## What your keys reach
+
+The platform generates image and video. Speech and text are the vendor's work, so those need that vendor's key. `list` says which is which, per model:
+
+```ts
+const ai = brotuClient({ apiKey: process.env.BROTU_API_KEY! });
+
+ai.image.list();
+// [{ model: { id: "gpt-image-2", … }, runsOn: "brotu", runnable: true }, …]
+
+ai.audio.list();
+// [{ model: { id: "kling/tts", … }, runsOn: "kling", runnable: false,
+//    reason: "Brotu generates image and video only. Pass providers.kling to run this one." }, …]
+```
+
+With a Brotu key alone that is 29 image and 37 video models, and the 31 speech and text models listed with the key they are waiting on. Models you cannot reach stay in the list on purpose: hiding them would hide the gap. `ai.models()` is the filtered view, only what runs.
 
 ## Video
 
@@ -149,6 +169,10 @@ Qwen: `Cherry`, `Ethan`, and the rest on `qwen3-tts-flash`.
 ElevenLabs: you must pass `voice`. There is no default.
 
 Realtime / Live WebSocket models are not on this surface.
+
+## CLI
+
+The terminal lives in [`../../cli`](../../cli) (`@brotu/cli`). This package is the library only.
 
 ## Jobs
 

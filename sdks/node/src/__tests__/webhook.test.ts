@@ -114,6 +114,7 @@ describe("client webhook", () => {
 
 	it("registers, reads back, and clears", () => {
 		const ai = brotuClient({
+			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/brotu",
 		});
@@ -133,6 +134,7 @@ describe("client webhook", () => {
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
 		const ai = brotuClient({
+			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/brotu",
 		});
@@ -157,6 +159,7 @@ describe("client webhook", () => {
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
 		const ai = brotuClient({
+			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/client",
 		});
@@ -176,7 +179,10 @@ describe("client webhook", () => {
 		const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 204 })));
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const ai = brotuClient({ providers: { kling: { apiKey: "k" } } });
+		const ai = brotuClient({
+			apiKey: "brotu_sk_test",
+			providers: { kling: { apiKey: "k" } },
+		});
 		await ai.jobs.poll(settledJob());
 
 		expect(fetchMock).not.toHaveBeenCalled();

@@ -46,7 +46,11 @@ const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
  * hosts, and the monorepo this was extracted from.
  */
 const LEAK_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
-	{ name: "internal Brotu host", pattern: /\b\w+\.brotu\.(app|com\.br)\b/ },
+	{
+		name: "internal Brotu host",
+		// api.brotu.app is the public generation host the client calls.
+		pattern: /\b(?!api\.)\w+\.brotu\.(app|com\.br)\b/,
+	},
 	// The package's own specifier is fine; any other @brotu/* is a monorepo leak.
 	{
 		name: "monorepo import",

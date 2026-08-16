@@ -8,6 +8,7 @@ import type { AIError } from "../src";
 import { brotuClient } from "../src";
 
 const ai = brotuClient({
+	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: { kling: { apiKey: process.env.KLING_API_KEY ?? "" } },
 });
 

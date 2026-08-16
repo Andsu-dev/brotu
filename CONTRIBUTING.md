@@ -1,13 +1,13 @@
 # Contributing
 
-This repo ships `@brotu/ai`: one TypeScript client that talks to each vendor's
-own API. You bring the keys. Nothing is proxied.
+This repo ships `@brotu/ai` and `@brotu/cli`. Your Brotu key comes from the
+platform. Vendor keys generate on the vendor when you have them.
 
 ## Issue first
 
 Do not open a pull request without an issue.
 
-1. Search [existing issues](https://github.com/Zorbi-Tech/brotu-sdk/issues) for a
+1. Search [existing issues](https://github.com/Zorbi-Tech/brotu/issues) for a
    duplicate.
 2. Open a new issue. Say what you want to change and why.
 3. Wait for a maintainer to accept it. An accepted issue is labelled or
@@ -32,13 +32,17 @@ You need [Bun](https://bun.sh). Node 18+ is enough to *use* the published
 package; development runs on Bun.
 
 ```bash
-git clone https://github.com/Zorbi-Tech/brotu-sdk.git
-cd brotu-sdk
+git clone https://github.com/Zorbi-Tech/brotu.git
+cd brotu
 git config core.hooksPath .githooks
 
 cd sdks/node
 bun install
 bun run gate
+
+cd ../../cli
+bun install
+bun test
 ```
 
 Useful scripts, all from `sdks/node`:
@@ -115,7 +119,7 @@ Create `sdks/node/src/adapters/<id>.adapter.ts` implementing
 
 Rules the existing adapters follow, and the tests enforce:
 
-- Talk to the vendor's own host. No aggregator in the middle.
+- Talk to the vendor's own host when that key is present. Otherwise generate on Brotu.
 - Return the shared `GenerationResult` / `GenerationOutput` shape. Extra
   vendor fields go in `output.raw`, never as sibling keys.
 - Do not throw across the public client. The adapter may throw internally;

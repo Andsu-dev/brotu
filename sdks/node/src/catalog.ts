@@ -1,4 +1,4 @@
-import type { AIModelConfig } from "./constants/model.types";
+import type { AIModelCategory, AIModelConfig } from "./constants/model.types";
 import {
 	BYTEPLUS_CATALOG,
 	BYTEPLUS_IMAGE_CATALOG,
@@ -8,7 +8,7 @@ import { GOOGLE_CATALOG } from "./providers/google.models";
 import { KLING_AUDIO_CATALOG, KLING_CATALOG } from "./providers/kling.models";
 import { OPENAI_CATALOG } from "./providers/openai.models";
 import { QWEN_CATALOG } from "./providers/qwen.models";
-import type { BrotuAIOptions, ResolvedProvider } from "./types";
+import type { BrotuAIOptions, ProviderConfig, ResolvedProvider } from "./types";
 
 /**
  * Where each provider lives. A provider absent from here has to be given a
@@ -21,7 +21,20 @@ const PROVIDER_BASE_URLS: Record<string, string> = {
 	google: "https://generativelanguage.googleapis.com",
 	openai: "https://api.openai.com",
 	qwen: "https://dashscope-intl.aliyuncs.com",
+	brotu: "https://api.brotu.app",
 };
+
+export const DEFAULT_BROTU_API_URL = PROVIDER_BASE_URLS.brotu;
+
+function vendorProviders(
+	options: BrotuAIOptions,
+): Record<string, ProviderConfig> {
+	return options.providers ?? {};
+}
+
+function brotuApiKey(options: BrotuAIOptions): string | undefined {
+	return options.apiKey?.trim() || undefined;
+}
 
 /** Every native provider that ships an adapter. */
 const BUILT_IN: AIModelConfig[] = [
@@ -112,27 +125,94 @@ export function resolveProvider(
 		);
 	}
 
-	const configured = options.providers[id];
-	if (!configured) {
-		const owned = Object.keys(options.providers).join(", ") || "none";
-		throw new Error(
-			`Model "${modelId}" runs on "${id}", but no API key was given for it (configured: ${owned}).`,
-		);
+	const configured = vendorProviders(options)[id];
+	if (configured) {
+		const baseUrl = configured.baseUrl ?? PROVIDER_BASE_URLS[id];
+		if (!baseUrl) {
+			throw new Error(
+				`Provider "${id}" has no known base URL — pass providers.${id}.baseUrl.`,
+			);
+		}
+		return { id, apiKey: configured.apiKey, baseUrl: baseUrl.replace(/\/$/, "") };
 	}
 
-	const baseUrl = configured.baseUrl ?? PROVIDER_BASE_URLS[id];
-	if (!baseUrl) {
-		throw new Error(
-			`Provider "${id}" has no known base URL — pass providers.${id}.baseUrl.`,
-		);
+	const platformKey = brotuApiKey(options);
+	if (platformKey) {
+		return {
+			id: "brotu",
+			apiKey: platformKey,
+			baseUrl: (options.apiUrl ?? DEFAULT_BROTU_API_URL).replace(/\/$/, ""),
+		};
 	}
 
-	return { id, apiKey: configured.apiKey, baseUrl: baseUrl.replace(/\/$/, "") };
+	const owned = Object.keys(vendorProviders(options)).join(", ") || "none";
+	throw new Error(
+		`Model "${modelId}" runs on "${id}", but no API key was given for it (configured: ${owned}). Pass a Brotu key to generate on the platform.`,
+	);
+}
+
+/**
+ * What the platform generates on credits. Speech and text are the vendor's
+ * work, so a Brotu key alone does not reach them. The Brotu adapter reads this
+ * too, so the catalog and the adapter cannot drift apart.
+ */
+export const BROTU_SUPPORTED_CATEGORIES: AIModelCategory[] = ["image", "video"];
+
+/** A model plus where it would actually run with the keys at hand. */
+export interface ModelAvailability {
+	model: AIModelConfig;
+	/** Provider that serves it: a vendor id, or "brotu" for the platform. */
+	runsOn: string;
+	/** False when nothing configured can run it. `reason` says why. */
+	runnable: boolean;
+	reason?: string;
+}
+
+/**
+ * Every catalog model, each labelled with the host that would serve it. This is
+ * the honest view: `runnable: false` entries are the ones a key is missing for,
+ * and they stay in the list precisely so the caller can see what is missing.
+ */
+export function describeModels(options: BrotuAIOptions): ModelAvailability[] {
+	const vendors = vendorProviders(options);
+	const platformKey = brotuApiKey(options);
+
+	return catalog.map((model) => {
+		const provider = model.provider;
+		if (!provider) {
+			return {
+				model,
+				runsOn: "(none)",
+				runnable: false,
+				reason: "The model declares no provider.",
+			};
+		}
+		if (provider in vendors) {
+			return { model, runsOn: provider, runnable: true };
+		}
+		if (platformKey) {
+			if (BROTU_SUPPORTED_CATEGORIES.includes(model.category)) {
+				return { model, runsOn: "brotu", runnable: true };
+			}
+			return {
+				model,
+				runsOn: provider,
+				runnable: false,
+				reason: `Brotu generates ${BROTU_SUPPORTED_CATEGORIES.join(" and ")} only. Pass providers.${provider} to run this one.`,
+			};
+		}
+		return {
+			model,
+			runsOn: provider,
+			runnable: false,
+			reason: `No key for "${provider}". Pass a Brotu key or providers.${provider}.`,
+		};
+	});
 }
 
 /** Models the caller can actually run, given the keys they supplied. */
 export function getAvailableModels(options: BrotuAIOptions): AIModelConfig[] {
-	return catalog.filter(
-		(model) => model.provider && model.provider in options.providers,
-	);
+	return describeModels(options)
+		.filter((entry) => entry.runnable)
+		.map((entry) => entry.model);
 }
