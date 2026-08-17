@@ -1,6 +1,6 @@
 {
 	"name": "@brotu/cli",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"type": "module",
 	"description": "Terminal client for @brotu/ai. Your keys. Their APIs.",
 	"license": "MIT",
@@ -22,7 +22,7 @@
 		"prepublishOnly": "bun test && bun run build"
 	},
 	"dependencies": {
-		"@brotu/ai": "^0.5.0"
+		"@brotu/ai": "^0.6.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.11",
