@@ -62,6 +62,7 @@ The portable surface is the same on every vendor:
 | `ai.audio` | text-to-speech |
 | `ai.jobs` | poll or wait on a stored handle |
 | `ai.webhook` | register a URL the client POSTs when a generation settles |
+| `hooks` | run your own code in-process when a generation starts, settles or fails |
 | `ai.estimateCost` | units (and USD, when the catalog has a verified rate) |
 | `brotu` CLI | same client in the terminal: `models`, `video`, `image`, `job wait` |
 
@@ -260,6 +261,50 @@ The POST is JSON. Check `x-brotu-event` and, if you set a secret, `x-brotu-webho
 `generation.failed` carries `error: { code, message }` and no outputs. Timeouts and routing errors (unknown model, missing key) do not fire the hook — nothing came back.
 
 Error codes: `unknown_model`, `missing_key`, `unsupported_provider`, `invalid_request`, `provider_error`, `timeout`.
+
+## Hooks
+
+A webhook needs an endpoint. A hook is a function, so it runs inside your process — send the email, write the row, push to the queue, no HTTP round trip. Both fire at the same moments, and a hook that throws never fails the generation.
+
+```ts
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!,
+  providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
+  hooks: {
+    onVideoLoading: (e) => console.log("generating", e.model),
+    onVideoSuccess: (e) => sendEmail("your video is ready", e.outputs?.[0]?.url),
+    onVideoError: (e) => sendEmail("your video failed", e.error?.message),
+  },
+});
+```
+
+One optional callback per kind and stage — twelve names, all typed:
+
+| | `Loading` | `Success` | `Error` |
+|---|---|---|---|
+| **image** | `onImageLoading` | `onImageSuccess` | `onImageError` |
+| **video** | `onVideoLoading` | `onVideoSuccess` | `onVideoError` |
+| **audio** | `onAudioLoading` | `onAudioSuccess` | `onAudioError` |
+| **text** | `onTextLoading` | `onTextSuccess` | `onTextError` |
+
+`Loading` fires once the model is routed, before the provider is called. `Success` and `Error` fire wherever the webhook fires — `generate`, `jobs.wait`, a terminal `jobs.poll` — deduped by job id, so a job settles once no matter how often you poll it.
+
+Every hook receives the same event:
+
+```ts
+{
+  kind: "video",
+  stage: "Success",
+  provider: "kling",
+  model: "kling/v2-6",
+  jobId: "task-1",
+  outputs: [{ url: "https://…", mimeType: "video/mp4" }],
+  error: undefined,          // { code, message } on Error
+  metadata: { userId: "42" }, // whatever you passed on the request
+  processingTimeMs: 8100,
+  at: "2026-08-16T12:00:00.000Z",
+}
+```
 
 ## Motion control, avatars, omni
 
