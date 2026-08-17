@@ -3,7 +3,7 @@ import type { GenerationOutput } from "../ports/content-generator.port";
 export type AIErrorCode =
 	/** The model id is not in the catalog. */
 	| "unknown_model"
-	/** The model's provider has no API key configured on this client. */
+	/** The model's provider has no vendor key and no Brotu key. */
 	| "missing_key"
 	/** No adapter ships for that provider. */
 	| "unsupported_provider"

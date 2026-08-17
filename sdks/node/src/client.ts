@@ -1,3 +1,4 @@
+import { BrotuAdapter } from "./adapters/brotu.adapter";
 import { BytePlusAdapter } from "./adapters/byteplus.adapter";
 import { ElevenLabsAdapter } from "./adapters/elevenlabs.adapter";
 import { GoogleAdapter } from "./adapters/google.adapter";
@@ -5,12 +6,14 @@ import { KlingAdapter } from "./adapters/kling.adapter";
 import { OpenAIAdapter } from "./adapters/openai.adapter";
 import { QwenAdapter } from "./adapters/qwen.adapter";
 import {
+	describeModels,
 	getAvailableModels,
 	getModel,
+	type ModelAvailability,
 	registerModels,
 	resolveProvider,
 } from "./catalog";
-import type { AIModelConfig } from "./constants/model.types";
+import type { AIModelCategory, AIModelConfig } from "./constants/model.types";
 import {
 	type AIError,
 	fail,
@@ -76,19 +79,30 @@ export interface BrotuAI {
 		submit(params: ImageGenerationParams): Promise<Result<Job>>;
 		/** submit + wait. Convenient, but holds the call open for the whole run. */
 		generate(params: ImageGenerationParams): Promise<Result<Generation>>;
+		/**
+		 * Every image model, each labelled with the host that would serve it
+		 * (`runsOn`) and whether your keys reach it (`runnable`). Unreachable
+		 * models stay in the list, with `reason`, so the gap is visible.
+		 */
+		list(): ModelAvailability[];
 	};
 	video: {
 		submit(params: VideoGenerationParams): Promise<Result<Job>>;
 		generate(params: VideoGenerationParams): Promise<Result<Generation>>;
+		list(): ModelAvailability[];
 	};
 	text: {
 		submit(params: TextGenerationParams): Promise<Result<Job>>;
 		generate(params: TextGenerationParams): Promise<Result<Generation>>;
+		/** Text runs on the vendor, so these need `providers`, not a Brotu key. */
+		list(): ModelAvailability[];
 	};
 	/** Speech synthesis. `prompt` is the text to speak. */
 	audio: {
 		submit(params: AudioGenerationParams): Promise<Result<Job>>;
 		generate(params: AudioGenerationParams): Promise<Result<Generation>>;
+		/** Speech runs on the vendor, so these need `providers`, not a Brotu key. */
+		list(): ModelAvailability[];
 	};
 	jobs: {
 		/** Ask once. Returns straight away, settled or not. */
@@ -141,7 +155,7 @@ export interface BrotuAI {
 		/** Compose or edit across up to ten references. */
 		imageOmni(input: ImageOmniInput): Promise<Result<Job>>;
 	};
-	/** Models runnable with the keys given to this client. */
+	/** Models this client can run. */
 	models(): AIModelConfig[];
 	/**
 	 * What this generation will be billed for, before running it. Always reports
@@ -154,10 +168,16 @@ export interface BrotuAI {
 	): Promise<Result<CostEstimate>>;
 }
 
-export function brotuClient(options: BrotuAIOptions): BrotuAI {
-	if (Object.keys(options.providers).length === 0) {
-		throw new Error("brotuClient requires at least one provider API key.");
+export function brotu(options: BrotuAIOptions): BrotuAI {
+	const apiKey = options.apiKey?.trim();
+	if (!apiKey) {
+		throw new Error(
+			"Pass a Brotu API key (brotu_sk_…). Get one at https://brotu.app.",
+		);
 	}
+
+	const optionsWithKey: BrotuAIOptions = { ...options, apiKey };
+	const vendors = optionsWithKey.providers ?? {};
 
 	registerModels(options.models);
 
@@ -197,7 +217,7 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 
 		let provider: ReturnType<typeof resolveProvider>;
 		try {
-			provider = resolveProvider(modelId, options);
+			provider = resolveProvider(modelId, optionsWithKey);
 		} catch (error) {
 			return failFrom("missing_key", error, { model: modelId });
 		}
@@ -225,6 +245,13 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		apiKey: string;
 		baseUrl: string;
 	}): ContentGeneratorPort | undefined {
+		if (provider.id === "brotu") {
+			return new BrotuAdapter({
+				apiKey,
+				apiUrl: optionsWithKey.apiUrl,
+				workspaceId: optionsWithKey.workspaceId,
+			});
+		}
 		if (provider.id === "kling") {
 			return new KlingAdapter({
 				apiKey: provider.apiKey,
@@ -562,7 +589,7 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 
 	/** Only built when a kling key is present, so the namespace tells the truth. */
 	function klingNamespace(): BrotuAI["kling"] {
-		const configured = options.providers.kling;
+		const configured = vendors.kling;
 		if (!configured) return undefined;
 
 		const adapter = new KlingAdapter({
@@ -594,7 +621,7 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 
 	/** Only built when a google key is present, so the namespace tells the truth. */
 	function googleNamespace(): BrotuAI["google"] {
-		const configured = options.providers.google;
+		const configured = vendors.google;
 		if (!configured) return undefined;
 
 		const adapter = new GoogleAdapter({
@@ -613,24 +640,35 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 		};
 	}
 
+	/** The catalog for one kind of work, labelled with what actually serves it. */
+	function listFor(category: AIModelCategory): ModelAvailability[] {
+		return describeModels(optionsWithKey).filter(
+			(entry) => entry.model.category === category,
+		);
+	}
+
 	return {
 		google: googleNamespace(),
 		kling: klingNamespace(),
 		image: {
 			submit: (params) => submit("image", params),
 			generate: (params) => generate("image", params),
+			list: () => listFor("image"),
 		},
 		video: {
 			submit: (params) => submit("video", params),
 			generate: (params) => generate("video", params),
+			list: () => listFor("video"),
 		},
 		text: {
 			submit: (params) => submit("text", params),
 			generate: (params) => generate("text", params),
+			list: () => listFor("text"),
 		},
 		audio: {
 			submit: (params) => submit("audio", params),
 			generate: (params) => generate("audio", params),
+			list: () => listFor("audio"),
 		},
 		webhook: {
 			set(value) {
@@ -684,7 +722,7 @@ export function brotuClient(options: BrotuAIOptions): BrotuAI {
 				}
 			},
 		},
-		models: () => getAvailableModels(options),
+		models: () => getAvailableModels(optionsWithKey),
 		estimateCost: async (type, params) => {
 			const routed = route(params.model);
 			if (routed.error) return fail(routed.error);

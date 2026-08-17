@@ -8,9 +8,10 @@
  * The namespace only exists when a kling key is configured, so the type tells
  * you the truth about what is reachable.
  */
-import { brotuClient } from "../src";
+import { brotu } from "../src";
 
-const ai = brotuClient({
+const ai = brotu({
+	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: { kling: { apiKey: process.env.KLING_API_KEY ?? "" } },
 });
 

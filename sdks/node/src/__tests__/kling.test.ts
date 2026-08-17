@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { KlingAdapter } from "../adapters/kling.adapter";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import {
 	avatar,
 	imageOmni,
@@ -139,14 +139,18 @@ describe("image omni", () => {
 
 describe("the kling namespace", () => {
 	it("is absent when no kling key is configured", () => {
-		const ai = brotuClient({
+		const ai = brotu({
+			apiKey: "brotu_sk_test",
 			providers: { byteplus: { apiKey: "ark-x" } },
 		});
 		expect(ai.kling).toBeUndefined();
 	});
 
 	it("is present when one is", () => {
-		const ai = brotuClient({ providers: { kling: { apiKey: "k" } } });
+		const ai = brotu({
+			apiKey: "brotu_sk_test",
+			providers: { kling: { apiKey: "k" } },
+		});
 		expect(typeof ai.kling?.motionControl).toBe("function");
 		expect(typeof ai.kling?.avatar).toBe("function");
 	});

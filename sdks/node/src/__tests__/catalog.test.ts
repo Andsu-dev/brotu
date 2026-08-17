@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
+import { BrotuAdapter } from "../adapters/brotu.adapter";
 import {
+	BROTU_SUPPORTED_CATEGORIES,
+	describeModels,
 	getAvailableModels,
 	getModel,
 	getProviders,
@@ -11,7 +14,15 @@ import { NATIVE_PROVIDERS } from "../client";
 import type { AIModelConfig } from "../constants/model.types";
 import type { BrotuAIOptions } from "../types";
 
-const KLING_ONLY: BrotuAIOptions = { providers: { kling: { apiKey: "k" } } };
+const KLING_ONLY: BrotuAIOptions = {
+	apiKey: "",
+	providers: { kling: { apiKey: "k" } },
+};
+
+const WITH_BROTU: BrotuAIOptions = {
+	apiKey: "brotu_sk_test",
+	providers: { kling: { apiKey: "k" } },
+};
 
 const OTHER_MODEL: AIModelConfig = {
 	id: "test/elsewhere",
@@ -46,6 +57,7 @@ describe("catalog", () => {
 
 	it("lets a regional or self-hosted deployment override the host", () => {
 		const resolved = resolveProvider("kling/v2-6", {
+			apiKey: "",
 			providers: {
 				kling: { apiKey: "k", baseUrl: "https://api-beijing.klingai.com/" },
 			},
@@ -64,10 +76,19 @@ describe("catalog", () => {
 		);
 	});
 
+	it("falls back to Brotu when the vendor key is missing", () => {
+		registerModels([OTHER_MODEL]);
+		const resolved = resolveProvider(OTHER_MODEL.id, WITH_BROTU);
+		expect(resolved.id).toBe("brotu");
+		expect(resolved.apiKey).toBe("brotu_sk_test");
+		expect(resolved.baseUrl).toBe("https://api.brotu.app");
+	});
+
 	it("requires a base URL for a provider it does not know", () => {
 		registerModels([OTHER_MODEL]);
 		expect(() =>
 			resolveProvider(OTHER_MODEL.id, {
+				apiKey: "",
 				providers: { elsewhere: { apiKey: "e" } },
 			}),
 		).toThrow(/no known base URL/);
@@ -88,6 +109,50 @@ describe("catalog", () => {
 		expect(ids).toContain("kling/v2-6");
 	});
 
+	it("reaches every image and video model once a Brotu key is set", () => {
+		registerModels([OTHER_MODEL]);
+		const ids = getAvailableModels(WITH_BROTU).map((model) => model.id);
+		expect(ids).toContain(OTHER_MODEL.id);
+		expect(ids).toContain("kling/v2-6");
+		expect(ids).toContain("gpt-image-2");
+	});
+
+	it("does not offer speech a Brotu key cannot run", () => {
+		// qwen is not configured in WITH_BROTU, and the platform serves no audio.
+		const ids = getAvailableModels(WITH_BROTU).map((model) => model.id);
+		expect(ids).not.toContain("cosyvoice-v3-flash");
+	});
+
+	it("keeps unreachable models visible, with the reason and the host", () => {
+		const speech = describeModels(WITH_BROTU).find(
+			(entry) => entry.model.id === "cosyvoice-v3-flash",
+		);
+		expect(speech?.runnable).toBe(false);
+		expect(speech?.runsOn).toBe("qwen");
+		expect(speech?.reason).toContain("providers.qwen");
+
+		const image = describeModels(WITH_BROTU).find(
+			(entry) => entry.model.id === "gpt-image-2",
+		);
+		// openai is not configured, so the platform picks it up.
+		expect(image?.runnable).toBe(true);
+		expect(image?.runsOn).toBe("brotu");
+	});
+
+	it("routes to the vendor, not the platform, when its key is present", () => {
+		const kling = describeModels(WITH_BROTU).find(
+			(entry) => entry.model.id === "kling/v2-6",
+		);
+		expect(kling?.runsOn).toBe("kling");
+	});
+
+	it("agrees with the Brotu adapter about what the platform serves", () => {
+		const adapter = new BrotuAdapter({ apiKey: "brotu_sk_test" });
+		expect([...adapter.supportedTypes].sort()).toEqual(
+			[...BROTU_SUPPORTED_CATEGORIES].sort(),
+		);
+	});
+
 	it("keeps registrations until the catalog is reset", () => {
 		registerModels([OTHER_MODEL]);
 		expect(getModel(OTHER_MODEL.id)).toBeDefined();
@@ -97,6 +162,7 @@ describe("catalog", () => {
 
 	it("gives every built-in model a provider, since nothing is implicit now", () => {
 		for (const model of getAvailableModels({
+			apiKey: "",
 			providers: { kling: { apiKey: "k" } },
 		})) {
 			expect(model.provider).toBeTruthy();

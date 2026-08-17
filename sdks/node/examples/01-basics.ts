@@ -1,11 +1,12 @@
 /**
- * The shortest useful path: one key, one call.
+ * The shortest useful path: a Brotu key, then generate.
  *
- *   KLING_API_KEY=... bun run examples/01-basics.ts
+ *   BROTU_API_KEY=... KLING_API_KEY=... bun run examples/01-basics.ts
  */
-import { brotuClient } from "../src";
+import { brotu } from "../src";
 
-const ai = brotuClient({
+const ai = brotu({
+	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: {
 		kling: { apiKey: process.env.KLING_API_KEY ?? "" },
 	},

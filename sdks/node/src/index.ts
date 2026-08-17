@@ -1,3 +1,5 @@
+export type { BrotuAdapterOptions } from "./adapters/brotu.adapter";
+export { BrotuAdapter } from "./adapters/brotu.adapter";
 export type { BytePlusAdapterOptions } from "./adapters/byteplus.adapter";
 export { BytePlusAdapter } from "./adapters/byteplus.adapter";
 export type {
@@ -13,7 +15,11 @@ export type { OpenAIAdapterOptions } from "./adapters/openai.adapter";
 export { OpenAIAdapter } from "./adapters/openai.adapter";
 export type { QwenAdapterOptions } from "./adapters/qwen.adapter";
 export { QwenAdapter } from "./adapters/qwen.adapter";
+export type { ModelAvailability } from "./catalog";
 export {
+	BROTU_SUPPORTED_CATEGORIES,
+	DEFAULT_BROTU_API_URL,
+	describeModels,
 	getAvailableModels,
 	getModel,
 	getModels,
@@ -24,7 +30,7 @@ export {
 	resolveProvider,
 } from "./catalog";
 export type { BrotuAI } from "./client";
-export { brotuClient } from "./client";
+export { brotu } from "./client";
 export type * from "./constants/model.types";
 export {
 	type AIError,

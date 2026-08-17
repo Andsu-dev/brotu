@@ -5,9 +5,10 @@
  * and Qwen, 30 days on Kling. A job you resume tomorrow would find a dead link,
  * so give the client a bucket and it copies finished outputs into it.
  */
-import { brotuClient } from "../src";
+import { brotu } from "../src";
 
-const ai = brotuClient({
+const ai = brotu({
+	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: {
 		kling: { apiKey: process.env.KLING_API_KEY ?? "" },
 		byteplus: { apiKey: process.env.ARK_API_KEY ?? "" },

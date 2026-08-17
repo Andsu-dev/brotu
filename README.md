@@ -6,9 +6,9 @@
 </p>
 
 <p align="center">
-  <strong>One client. Your keys. Their APIs.</strong><br>
+  <strong>One client. Your Brotu key. Their models.</strong><br>
   Video, image, speech, text, motion control, avatars and omni refine.<br>
-  No aggregator in the middle.
+  Bring a vendor key and generate on the vendor. Otherwise Brotu runs it.
 </p>
 
 <p align="center">
@@ -28,14 +28,15 @@
 
 Vendors do not agree on anything. Kling wants a task id. BytePlus Seedance 400s if you send a field the model does not accept. Qwen spells resolutions in uppercase. Google Veo is another host again.
 
-`@brotu/ai` is one TypeScript client for all of them. You pass the keys you already have. The SDK talks to each vendor's own API. Nothing is proxied, nothing is marked up.
+`@brotu/ai` is one TypeScript client for all of them. Get your key at [brotu.app](https://brotu.app). Pass a vendor key you already have and that model hits the vendor. Everything else generates on Brotu.
 
 97 models today: 37 video, 29 image, 12 speech, 19 text. Switching vendor is a model id, not a rewrite.
 
 ```ts
-import { brotuClient } from "@brotu/ai";
+import { brotu } from "@brotu/ai";
 
-const ai = brotuClient({
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!, // brotu_sk_… from https://brotu.app
   providers: {
     kling: { apiKey: process.env.KLING_API_KEY! },
     byteplus: { apiKey: process.env.ARK_API_KEY! },
@@ -49,7 +50,7 @@ const ai = brotuClient({
 });
 ```
 
-Only the providers you configure show up in `ai.models()`. No key, no model.
+Your Brotu key opens the catalog. A vendor key, when you have one, generates on that vendor.
 
 The portable surface is the same on every vendor:
 
@@ -62,6 +63,7 @@ The portable surface is the same on every vendor:
 | `ai.jobs` | poll or wait on a stored handle |
 | `ai.webhook` | register a URL the client POSTs when a generation settles |
 | `ai.estimateCost` | units (and USD, when the catalog has a verified rate) |
+| `brotu` CLI | same client in the terminal: `models`, `video`, `image`, `job wait` |
 
 Vendor-only work sits under a namespace that only exists when that key is set:
 
@@ -176,6 +178,31 @@ ElevenLabs needs an explicit voice. Gemini and Qwen pick a default if you omit i
 
 Live / realtime WebSocket APIs are not on this surface. They do not fit `generate`.
 
+## CLI
+
+One line, no Node required once a release binary exists:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Zorbi-Tech/brotu/main/install.sh | bash
+```
+
+That drops `brotu` in `/usr/local/bin` (or `~/.local/bin`). The CLI lives in [`cli/`](./cli) (`@brotu/cli`), not inside `@brotu/ai`. If there is no binary for your machine it falls back to npm/bun.
+
+Or, with Node already installed:
+
+```bash
+npx @brotu/cli --help
+npm i -g @brotu/cli
+```
+
+```bash
+brotu models
+brotu video "a cat, cinematic" -m kling/v2-6 --duration 5
+brotu job wait brotu-job.json --save out.mp4
+```
+
+`BROTU_API_KEY` comes from [brotu.app](https://brotu.app). Vendor keys (`KLING_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `QWEN_API_KEY`, `ELEVENLABS_API_KEY`) generate on the vendor when you have them. Video submits and writes a job file. `--wait` blocks.
+
 ## Jobs
 
 A job handle is plain JSON. Store it, hand it to another process, poll it tomorrow.
@@ -192,7 +219,8 @@ const { data: result } = await ai.jobs.wait(job, { timeoutMs: 420_000 });
 Register a URL on the client. When `generate`, `jobs.wait` or a terminal `jobs.poll` settles, the SDK POSTs the result there. A down hook never fails the generation.
 
 ```ts
-const ai = brotuClient({
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!,
   providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
   webhook: {
     url: "https://my.app/hooks/brotu",
@@ -344,7 +372,8 @@ data.usd; // number, or null
 Provider result URLs expire. Give the client a bucket and finished outputs land there. `outputs[].url` points at your copy; the original stays in `sourceUrl`.
 
 ```ts
-const ai = brotuClient({
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!,
   providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
   storage: {
     bucket: "my-bucket",
@@ -388,23 +417,23 @@ import { registerModels } from "@brotu/ai";
 registerModels([{ id: "kling/v3", provider: "kling" /* ... */ }]);
 ```
 
-## Not in here
-
-Credits, quotas, accounts and job persistence are product concerns. Metering belongs on a server.
-
 ## Repo
 
 ```
 sdks/node/        @brotu/ai
+cli/              @brotu/cli
 catalog/          shared model catalog as JSON
 ```
 
 Python and Go clients are planned. They will read [`catalog/catalog.json`](./catalog/catalog.json).
 
 ```bash
-cd sdks/node
-bun install
-bun run gate
+cd sdks/node && bun install && bun run gate
+cd ../../cli && bun install && bun test
 ```
 
 Open an issue before a PR. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Not in here
+
+Credits, quotas, accounts and job persistence are product concerns. Metering belongs on a server.

@@ -4,9 +4,10 @@
  * A video takes minutes. A serverless function does not. So the primary API is
  * submit-then-poll, and the handle is plain JSON you can put in a database.
  */
-import { brotuClient, type Job } from "../src";
+import { brotu, type Job } from "../src";
 
-const ai = brotuClient({
+const ai = brotu({
+	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: { qwen: { apiKey: process.env.QWEN_API_KEY ?? "" } },
 	// When wait/poll settles, POST the result here. A down hook never fails the job.
 	webhook: process.env.BROTU_WEBHOOK_URL,

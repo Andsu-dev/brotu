@@ -15,8 +15,20 @@ export interface ReferenceVideoInfo {
 }
 
 export interface BrotuAIOptions {
-	/** Provider keys the caller owns. Keys are provider ids used by the catalog. */
-	providers: Record<string, ProviderConfig>;
+	/**
+	 * Your Brotu key (`brotu_sk_…`), from https://brotu.app.
+	 * Vendor keys below generate on the vendor; everything else generates on Brotu.
+	 */
+	apiKey: string;
+	/** Brotu API origin. Defaults to `https://api.brotu.app`. */
+	apiUrl?: string;
+	/**
+	 * Workspace billed on Brotu generations. Resolved via
+	 * `GET /studio/default-workspace` when omitted.
+	 */
+	workspaceId?: string;
+	/** Vendor keys you already have. Those models generate on the vendor. */
+	providers?: Record<string, ProviderConfig>;
 	/** Provider used by catalog entries that do not declare one. Defaults to "kie". */
 	defaultProvider?: string;
 	/**

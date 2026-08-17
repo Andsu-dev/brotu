@@ -1,0 +1,49 @@
+{
+	"name": "@brotu/cli",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "Terminal client for @brotu/ai. Your keys. Their APIs.",
+	"license": "MIT",
+	"bin": {
+		"brotu": "dist/index.js"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"dev": "bun src/index.ts",
+		"build": "tsup",
+		"typecheck": "tsc --noEmit",
+		"test": "bun test",
+		"lint": "bunx --bun biome lint src",
+		"compile": "bun run scripts/compile.ts",
+		"prepublishOnly": "bun test && bun run build"
+	},
+	"dependencies": {
+		"@brotu/ai": "file:../sdks/node"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
+		"@types/bun": "^1.3.9",
+		"@types/node": "^26.2.0",
+		"tsup": "^8.5.1",
+		"typescript": "^7.0.2"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Zorbi-Tech/brotu.git",
+		"directory": "cli"
+	},
+	"homepage": "https://github.com/Zorbi-Tech/brotu/tree/main/cli",
+	"bugs": {
+		"url": "https://github.com/Zorbi-Tech/brotu/issues"
+	}
+}
