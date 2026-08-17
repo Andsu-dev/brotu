@@ -40,6 +40,12 @@ export {
 	ok,
 	type Result,
 } from "./helpers/result";
+export type {
+	HookEvent,
+	HookFn,
+	Hooks,
+	HookStage,
+} from "./lib/hooks";
 export {
 	isPendingJob,
 	type Job,

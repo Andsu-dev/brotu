@@ -77,6 +77,7 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 | `ai.audio` | `submit` / `generate` / `list` |
 | `ai.jobs` | `poll` / `wait` |
 | `ai.webhook` | `set` / `clear` / `get` |
+| `hooks` | constructor option: your own code on start, success and failure |
 | `ai.estimateCost` | units, and USD when verified |
 | `ai.kling` | `motionControl`, `omniVideo`, `avatar`, `outpainting`, `imageOmni` |
 | `ai.google` | `omniVideo` (conversational refine) |
@@ -221,6 +222,26 @@ The POST is JSON. Check `x-brotu-event` and, if you set a secret, `x-brotu-webho
 `generation.failed` carries `error: { code, message }` and no outputs. Timeouts and routing errors do not fire the hook.
 
 Error codes: `unknown_model`, `missing_key`, `unsupported_provider`, `invalid_request`, `provider_error`, `timeout`.
+
+## Hooks
+
+Same moments as the webhook, but a function instead of an endpoint — so it runs in your process, with your imports.
+
+```ts
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!,
+  providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
+  hooks: {
+    onVideoLoading: (e) => console.log("generating", e.model),
+    onVideoSuccess: (e) => sendEmail("your video is ready", e.outputs?.[0]?.url),
+    onVideoError: (e) => sendEmail("your video failed", e.error?.message),
+  },
+});
+```
+
+One optional callback per kind and stage — `on{Image,Video,Audio,Text}{Loading,Success,Error}`, twelve typed names. `Loading` fires once the model is routed, before the provider is called; `Success` and `Error` fire wherever the webhook fires, deduped by job id. A hook that throws never fails the generation.
+
+The event is `HookEvent`: `kind`, `stage`, `provider`, `model`, `jobId`, `outputs`, `error`, `metadata`, `processingTimeMs`, `at`.
 
 ## Motion control, avatars, omni
 
