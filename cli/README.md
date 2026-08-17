@@ -20,4 +20,4 @@ brotu video "a cat, cinematic" -m kling/v2-6 --duration 5
 brotu job wait brotu-job.json --save out.mp4
 ```
 
-`BROTU_API_KEY` comes from [brotu.app](https://brotu.app). Vendor keys (`KLING_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `QWEN_API_KEY`, `ELEVENLABS_API_KEY`) generate on the vendor when you have them.
+`BROTU_API_KEY` comes from [brotu.app](https://brotu.app). Vendor keys (`KLING_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `QWEN_API_KEY`, `ELEVENLABS_API_KEY`, `TOPAZ_API_KEY`) generate on the vendor when you have them.

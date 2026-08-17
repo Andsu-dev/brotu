@@ -12,6 +12,7 @@ export const PROVIDER_ENV: Record<string, readonly string[]> = {
 	openai: ["OPENAI_API_KEY"],
 	qwen: ["QWEN_API_KEY", "DASHSCOPE_API_KEY"],
 	elevenlabs: ["ELEVENLABS_API_KEY"],
+	topaz: ["TOPAZ_API_KEY", "TOPAZLABS_API_KEY"],
 };
 
 const BASE_URL_ENV: Record<string, string> = {
@@ -21,6 +22,7 @@ const BASE_URL_ENV: Record<string, string> = {
 	openai: "OPENAI_BASE_URL",
 	qwen: "QWEN_BASE_URL",
 	elevenlabs: "ELEVENLABS_BASE_URL",
+	topaz: "TOPAZ_BASE_URL",
 };
 
 export function providersFromEnv(

@@ -135,7 +135,7 @@ Rules the existing adapters follow, and the tests enforce:
 
 ### 3. Wire it
 
-Touch every place the current six providers are listed:
+Touch every place the current seven providers are listed:
 
 | File | What to add |
 |---|---|

@@ -257,7 +257,13 @@ export async function run(
 
 		const ai = createClient(env);
 		const model = requireModel(parsed.flags);
-		const prompt = requirePrompt(parsed.positionals);
+		const videoUrl = flagString(parsed.flags, "video");
+		const imageUrl = flagString(parsed.flags, "image");
+		const prompt =
+			(parsed.command === "video" && videoUrl) ||
+			(parsed.command === "image" && imageUrl)
+				? parsed.positionals.join(" ").trim()
+				: requirePrompt(parsed.positionals);
 		const wait = flagBool(parsed.flags, "wait");
 		const out = flagString(parsed.flags, "out") ?? DEFAULT_JOB_FILE;
 
@@ -269,6 +275,7 @@ export async function run(
 				aspectRatio: flagString(parsed.flags, "aspect"),
 				resolution: flagString(parsed.flags, "resolution"),
 				imageUrl: flagString(parsed.flags, "image"),
+				videoUrl,
 				webhook,
 			};
 
@@ -305,6 +312,7 @@ export async function run(
 				prompt,
 				aspectRatio: flagString(parsed.flags, "aspect"),
 				resolution: flagString(parsed.flags, "resolution"),
+				referenceImages: imageUrl ? [imageUrl] : undefined,
 				quality:
 					quality === "low" || quality === "medium" || quality === "high"
 						? quality

@@ -15,6 +15,8 @@ export type { OpenAIAdapterOptions } from "./adapters/openai.adapter";
 export { OpenAIAdapter } from "./adapters/openai.adapter";
 export type { QwenAdapterOptions } from "./adapters/qwen.adapter";
 export { QwenAdapter } from "./adapters/qwen.adapter";
+export type { TopazAdapterOptions } from "./adapters/topaz.adapter";
+export { TopazAdapter } from "./adapters/topaz.adapter";
 export type { ModelAvailability } from "./catalog";
 export {
 	BROTU_SUPPORTED_CATEGORIES,
@@ -113,6 +115,15 @@ export {
 	type QwenImageBinding,
 	type QwenVideoBinding,
 } from "./providers/qwen.models";
+export {
+	TOPAZ_CATALOG,
+	TOPAZ_IMAGE_MODELS,
+	TOPAZ_MODELS,
+	TOPAZ_VIDEO_MODELS,
+	type TopazBinding,
+	type TopazFilterKind,
+	type TopazSurface,
+} from "./providers/topaz.models";
 export type {
 	BrotuAIOptions,
 	ProviderConfig,
