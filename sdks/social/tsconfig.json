@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"lib": ["esnext"],
+		"types": ["node", "bun"],
+		"strict": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"verbatimModuleSyntax": true,
+		"allowImportingTsExtensions": true
+	},
+	"include": ["src"]
+}
