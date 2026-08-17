@@ -23,7 +23,8 @@ Options:
       --duration      seconds (video)
       --aspect        16:9, 9:16, 1:1, …
       --resolution    720p, 1080p, 1K, …
-      --image         first-frame / reference URL
+      --image         first-frame, reference, or source image URL
+      --video         source video URL (edit / upscale / interpolate)
       --quality       low | medium | high (image)
       --voice         speech voice
       --system        system prompt (text)

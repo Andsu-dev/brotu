@@ -124,6 +124,17 @@ describe("parseArgs", () => {
 		expect(parsed.flags.duration).toBe("5");
 	});
 
+	it("reads a source video URL", () => {
+		const parsed = parseArgs([
+			"video",
+			"-m",
+			"aion-1",
+			"--video",
+			"https://cdn.example/in.mp4",
+		]);
+		expect(parsed.flags.video).toBe("https://cdn.example/in.mp4");
+	});
+
 	it("treats job wait as a subcommand", () => {
 		const parsed = parseArgs(["job", "wait", "job.json", "--timeout", "1000"]);
 		expect(parsed.command).toBe("job");
@@ -147,6 +158,11 @@ describe("providersFromEnv", () => {
 			"kling",
 		]);
 		expect(providers.byteplus?.apiKey).toBe("ark");
+	});
+
+	it("reads a Topaz key", () => {
+		const providers = providersFromEnv({ TOPAZ_API_KEY: "tz" });
+		expect(providers.topaz?.apiKey).toBe("tz");
 	});
 });
 
