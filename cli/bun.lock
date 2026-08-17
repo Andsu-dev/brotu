@@ -5,7 +5,7 @@
     "": {
       "name": "@brotu/cli",
       "dependencies": {
-        "@brotu/ai": "^0.5.0",
+        "@brotu/ai": "^0.6.0",
       },
       "devDependencies": {
         "@biomejs/biome": "2.3.11",
@@ -35,7 +35,7 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.3.11", "", { "os": "win32", "cpu": "x64" }, "sha512-43VrG813EW+b5+YbDbz31uUsheX+qFKCpXeY9kfdAx+ww3naKxeVkTD9zLIWxUPfJquANMHrmW3wbe/037G0Qg=="],
 
-    "@brotu/ai": ["@brotu/ai@0.5.0", "", { "peerDependencies": { "@aws-sdk/client-s3": "^3", "@aws-sdk/s3-request-presigner": "^3" }, "optionalPeers": ["@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"] }, "sha512-xzBSvFIC7aRYXS1LrMNBBLR8dk00ONx8iGw949HmHGf/KfHtODSSGmICioa7QprexELeNCJnRhzHcGER0I6Rzg=="],
+    "@brotu/ai": ["@brotu/ai@0.6.0", "", { "peerDependencies": { "@aws-sdk/client-s3": "^3", "@aws-sdk/s3-request-presigner": "^3" }, "optionalPeers": ["@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"] }, "sha512-yyVBgqToHE0ytgKFjcjZK7ZuCJdsNwbj1IQNUGBKAyhxR1Nd+qsXWSSS+pJqiVcK3b2fmr2ssIsidJpi4H2NGQ=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.7", "", { "os": "aix", "cpu": "ppc64" }, "sha512-EKX3Qwmhz1eMdEJokhALr0YiD0lhQNwDqkPYyPhiSwKrh7/4KRjQc04sZ8db+5DVVnZ1LmbNDI1uAMPEUBnQPg=="],
 
