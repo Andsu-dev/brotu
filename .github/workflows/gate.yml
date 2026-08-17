@@ -39,10 +39,10 @@ jobs:
       - name: import the built package
         working-directory: sdks/node
         run: |
-          node -e "const { brotuClient } = require('./dist/index.cjs'); \
-            const ai = brotuClient({ providers: { kling: { apiKey: 'x' } } }); \
+          node -e "const { brotu } = require('./dist/index.cjs'); \
+            const ai = brotu({ providers: { kling: { apiKey: 'x' } } }); \
             if (ai.models().length === 0) { throw new Error('empty catalog'); } \
             console.log('cjs ok:', ai.models().length, 'models');"
           node --input-type=module -e "import('./dist/index.js').then(m => { \
-            const ai = m.brotuClient({ providers: { qwen: { apiKey: 'x' } } }); \
+            const ai = m.brotu({ providers: { qwen: { apiKey: 'x' } } }); \
             console.log('esm ok:', ai.models().length, 'models'); });"

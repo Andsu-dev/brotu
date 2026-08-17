@@ -5,9 +5,9 @@
  * `error`, so a failure is not something the type system lets you forget.
  */
 import type { AIError } from "../src";
-import { brotuClient } from "../src";
+import { brotu } from "../src";
 
-const ai = brotuClient({
+const ai = brotu({
 	apiKey: process.env.BROTU_API_KEY ?? "",
 	providers: { kling: { apiKey: process.env.KLING_API_KEY ?? "" } },
 });

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { registerModels, resetCatalog } from "../catalog";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import type { AIModelConfig } from "../constants/model.types";
 
 const OTHER_MODEL: AIModelConfig = {
@@ -14,19 +14,19 @@ const OTHER_MODEL: AIModelConfig = {
 	provider: "elsewhere",
 };
 
-describe("brotuClient", () => {
+describe("brotu", () => {
 	beforeEach(() => {
 		resetCatalog();
 	});
 
 	it("refuses to build a client without a Brotu API key", () => {
 		expect(() =>
-			brotuClient({ apiKey: "", providers: { kling: { apiKey: "k" } } }),
+			brotu({ apiKey: "", providers: { kling: { apiKey: "k" } } }),
 		).toThrow(/Brotu API key/);
 	});
 
 	it("lists the full catalog once a Brotu key is set", () => {
-		const ai = brotuClient({ apiKey: "brotu_sk_test" });
+		const ai = brotu({ apiKey: "brotu_sk_test" });
 		const ids = ai.models().map((model) => model.id);
 		expect(ids).toContain("kling/v2-6");
 		expect(ids).toContain("kling/image-v2");
@@ -40,7 +40,7 @@ describe("the data/error contract", () => {
 	});
 
 	const ai = () =>
-		brotuClient({ apiKey: "brotu_sk_test", providers: { kling: { apiKey: "k" } } });
+		brotu({ apiKey: "brotu_sk_test", providers: { kling: { apiKey: "k" } } });
 
 	it("reports an unknown model as data:null with a code", async () => {
 		const { data, error } = await ai().video.submit({
@@ -88,7 +88,7 @@ describe("the data/error contract", () => {
 		registerModels([
 			{ ...OTHER_MODEL, id: "test/no-adapter", provider: "somevendor" },
 		]);
-		const { data, error } = await brotuClient({
+		const { data, error } = await brotu({
 			apiKey: "brotu_sk_test",
 			providers: {
 				somevendor: { apiKey: "s", baseUrl: "https://api.example.com" },

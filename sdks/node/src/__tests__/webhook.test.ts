@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import type { Job } from "../lib/jobs";
 import { deliverWebhook, resolveWebhook } from "../lib/webhook";
 
@@ -113,7 +113,7 @@ describe("client webhook", () => {
 	});
 
 	it("registers, reads back, and clears", () => {
-		const ai = brotuClient({
+		const ai = brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/brotu",
@@ -133,7 +133,7 @@ describe("client webhook", () => {
 		const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 204 })));
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const ai = brotuClient({
+		const ai = brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/brotu",
@@ -158,7 +158,7 @@ describe("client webhook", () => {
 		const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 204 })));
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const ai = brotuClient({
+		const ai = brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 			webhook: "https://hooks.example/client",
@@ -179,7 +179,7 @@ describe("client webhook", () => {
 		const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 204 })));
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const ai = brotuClient({
+		const ai = brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 		});

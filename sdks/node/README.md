@@ -23,7 +23,7 @@
   <a href="https://x.com/brotuApp">@brotuApp</a>
 </p>
 
-Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different HTTP. This package is one `brotuClient` in front of them.
+Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different HTTP. This package is one `brotu` in front of them.
 
 Get your key (`brotu_sk_…`) at [brotu.app](https://brotu.app). Pass a vendor key you already have and that model hits the vendor. Everything else generates on Brotu.
 
@@ -46,9 +46,9 @@ pnpm add @brotu/ai
 ## Client
 
 ```ts
-import { brotuClient } from "@brotu/ai";
+import { brotu } from "@brotu/ai";
 
-const ai = brotuClient({
+const ai = brotu({
   apiKey: process.env.BROTU_API_KEY!, // brotu_sk_… from https://brotu.app
   providers: {
     kling: { apiKey: process.env.KLING_API_KEY! },
@@ -88,7 +88,7 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 The platform generates image and video. Speech and text are the vendor's work, so those need that vendor's key. `list` says which is which, per model:
 
 ```ts
-const ai = brotuClient({ apiKey: process.env.BROTU_API_KEY! });
+const ai = brotu({ apiKey: process.env.BROTU_API_KEY! });
 
 ai.image.list();
 // [{ model: { id: "gpt-image-2", … }, runsOn: "brotu", runnable: true }, …]

@@ -33,9 +33,9 @@ Vendors do not agree on anything. Kling wants a task id. BytePlus Seedance 400s 
 97 models today: 37 video, 29 image, 12 speech, 19 text. Switching vendor is a model id, not a rewrite.
 
 ```ts
-import { brotuClient } from "@brotu/ai";
+import { brotu } from "@brotu/ai";
 
-const ai = brotuClient({
+const ai = brotu({
   apiKey: process.env.BROTU_API_KEY!, // brotu_sk_… from https://brotu.app
   providers: {
     kling: { apiKey: process.env.KLING_API_KEY! },
@@ -219,7 +219,7 @@ const { data: result } = await ai.jobs.wait(job, { timeoutMs: 420_000 });
 Register a URL on the client. When `generate`, `jobs.wait` or a terminal `jobs.poll` settles, the SDK POSTs the result there. A down hook never fails the generation.
 
 ```ts
-const ai = brotuClient({
+const ai = brotu({
   apiKey: process.env.BROTU_API_KEY!,
   providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
   webhook: {
@@ -372,7 +372,7 @@ data.usd; // number, or null
 Provider result URLs expire. Give the client a bucket and finished outputs land there. `outputs[].url` points at your copy; the original stays in `sourceUrl`.
 
 ```ts
-const ai = brotuClient({
+const ai = brotu({
   apiKey: process.env.BROTU_API_KEY!,
   providers: { kling: { apiKey: process.env.KLING_API_KEY! } },
   storage: {

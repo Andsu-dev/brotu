@@ -168,7 +168,7 @@ export interface BrotuAI {
 	): Promise<Result<CostEstimate>>;
 }
 
-export function brotuClient(options: BrotuAIOptions): BrotuAI {
+export function brotu(options: BrotuAIOptions): BrotuAI {
 	const apiKey = options.apiKey?.trim();
 	if (!apiKey) {
 		throw new Error(

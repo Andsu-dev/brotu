@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { GoogleAdapter } from "../adapters/google.adapter";
 import { OpenAIAdapter } from "../adapters/openai.adapter";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import {
 	GOOGLE_AUDIO_MODELS,
 	GOOGLE_TEXT_MODELS,
@@ -132,7 +132,7 @@ describe("veo", () => {
 	});
 
 	it("prices per second from the catalog", async () => {
-		const ai = brotuClient({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } });
+		const ai = brotu({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } });
 		const { data } = await ai.estimateCost("video", {
 			model: "veo-3.1-generate-preview",
 			prompt: "x",
@@ -195,7 +195,7 @@ describe("gemini omni", () => {
 	});
 
 	it("has no published rate, so it reports units without inventing a price", async () => {
-		const ai = brotuClient({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } });
+		const ai = brotu({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } });
 		const { data } = await ai.estimateCost("video", {
 			model: "gemini-omni-flash-preview",
 			prompt: "x",
@@ -206,10 +206,10 @@ describe("gemini omni", () => {
 
 	it("exposes the namespace only when a google key is configured", () => {
 		expect(
-			brotuClient({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } }).google,
+			brotu({ apiKey: "brotu_sk_test", providers: { google: { apiKey: "g" } } }).google,
 		).toBeDefined();
 		expect(
-			brotuClient({ apiKey: "brotu_sk_test", providers: { kling: { apiKey: "k" } } }).google,
+			brotu({ apiKey: "brotu_sk_test", providers: { kling: { apiKey: "k" } } }).google,
 		).toBeUndefined();
 	});
 });

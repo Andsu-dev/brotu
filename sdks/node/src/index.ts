@@ -30,7 +30,7 @@ export {
 	resolveProvider,
 } from "./catalog";
 export type { BrotuAI } from "./client";
-export { brotuClient } from "./client";
+export { brotu } from "./client";
 export type * from "./constants/model.types";
 export {
 	type AIError,

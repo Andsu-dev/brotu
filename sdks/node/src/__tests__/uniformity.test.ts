@@ -3,7 +3,7 @@ import { BytePlusAdapter } from "../adapters/byteplus.adapter";
 import { KlingAdapter } from "../adapters/kling.adapter";
 import { QwenAdapter } from "../adapters/qwen.adapter";
 import { getModel, getModels, registerModels, resetCatalog } from "../catalog";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import type { AIModelConfig } from "../constants/model.types";
 import type { GenerationOutput } from "../ports/content-generator.port";
 
@@ -148,7 +148,7 @@ describe("every catalog entry describes itself the same way", () => {
 
 describe("caller metadata survives the round trip", () => {
 	it("rides on the job, so a resumed one still knows what it was for", async () => {
-		const ai = brotuClient({
+		const ai = brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 		});
@@ -165,7 +165,7 @@ describe("caller metadata survives the round trip", () => {
 });
 
 describe("cost estimates are honest", () => {
-	const ai = brotuClient({
+	const ai = brotu({
 		apiKey: "brotu_sk_test",
 		providers: {
 			kling: { apiKey: "k" },
@@ -258,7 +258,7 @@ describe("cost estimates are honest", () => {
 });
 
 describe("speech", () => {
-	const ai = brotuClient({
+	const ai = brotu({
 		apiKey: "brotu_sk_test",
 		providers: {
 			qwen: { apiKey: "q" },
@@ -309,7 +309,7 @@ describe("speech", () => {
 });
 
 describe("text", () => {
-	const ai = brotuClient({
+	const ai = brotu({
 		apiKey: "brotu_sk_test",
 		providers: { qwen: { apiKey: "q" } },
 	});

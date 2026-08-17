@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import { BrotuAdapter, PLATFORM_MODEL_IDS } from "../adapters/brotu.adapter";
-import { brotuClient } from "../client";
+import { brotu } from "../client";
 import { isPendingJob, runInSubmitMode } from "../lib/jobs";
 
 describe("platform model aliases", () => {
@@ -137,7 +137,7 @@ describe("client routing", () => {
 		);
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const { error } = await brotuClient({
+		const { error } = await brotu({
 			apiKey: "brotu_sk_test",
 			providers: { kling: { apiKey: "k" } },
 		}).video.submit({
@@ -169,7 +169,7 @@ describe("client routing", () => {
 		});
 		globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-		const { data, error } = await brotuClient({
+		const { data, error } = await brotu({
 			apiKey: "brotu_sk_test",
 		}).video.submit({
 			model: "kling/v2-6",

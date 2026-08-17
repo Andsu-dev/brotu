@@ -109,7 +109,7 @@ Create `sdks/node/src/providers/<id>.models.ts`.
 
 - One catalog id per model the caller will type.
 - `provider` on every entry must be the same string you will use as the key
-  in `brotuClient({ providers: { <id>: { apiKey } } })`.
+  in `brotu({ providers: { <id>: { apiKey } } })`.
 - Export a `*_CATALOG: AIModelConfig[]`.
 
 ### 2. Adapter
@@ -123,7 +123,7 @@ Rules the existing adapters follow, and the tests enforce:
 - Return the shared `GenerationResult` / `GenerationOutput` shape. Extra
   vendor fields go in `output.raw`, never as sibling keys.
 - Do not throw across the public client. The adapter may throw internally;
-  `brotuClient` turns that into `{ data: null, error }`.
+  `brotu` turns that into `{ data: null, error }`.
 - If the vendor queues work, implement `completeJob` and throw `PendingJob`
   from `submit()` so `ai.video.submit` / `ai.jobs.poll` work.
 - If the vendor answers in one request (OpenAI images, some Seedream calls),
