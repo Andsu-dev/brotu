@@ -22,6 +22,7 @@ import {
 	ok,
 	type Result,
 } from "./helpers/result";
+import { findHook, runHook } from "./lib/hooks";
 import {
 	isPendingJob,
 	type Job,
@@ -323,7 +324,10 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 		processingTimeMs?: number;
 	}): Promise<void> {
 		const config = webhookFor(input.params);
-		if (!config) return;
+		const kind = input.kind ?? input.job?.kind;
+		const stage = input.event === "generation.succeeded" ? "Success" : "Error";
+		const hook = findHook(options.hooks, kind, stage);
+		if (!config && !hook) return;
 
 		const jobId = input.job?.id;
 		if (jobId) {
@@ -336,7 +340,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 			jobId,
 			provider: input.provider ?? input.job?.provider,
 			model: input.model ?? input.job?.model,
-			kind: input.kind ?? input.job?.kind,
+			kind,
 			outputs: input.outputs,
 			error: input.error
 				? { code: input.error.code, message: input.error.message }
@@ -346,7 +350,37 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 			completedAt: new Date().toISOString(),
 		};
 
-		await deliverWebhook(config, payload);
+		if (hook && kind) {
+			await runHook(hook, {
+				kind,
+				stage,
+				provider: payload.provider ?? "",
+				model: payload.model ?? "",
+				jobId: payload.jobId,
+				outputs: payload.outputs,
+				error: payload.error,
+				metadata: payload.metadata,
+				processingTimeMs: payload.processingTimeMs,
+				at: payload.completedAt,
+			});
+		}
+		if (config) await deliverWebhook(config, payload);
+	}
+
+	/** Fires the moment work leaves for the provider, before anything settles. */
+	function notifyLoading(
+		kind: GenerationType,
+		routed: { provider: string; model: string },
+		params: GenerationParams,
+	): Promise<void> {
+		return runHook(findHook(options.hooks, kind, "Loading"), {
+			kind,
+			stage: "Loading",
+			provider: routed.provider,
+			model: routed.model,
+			metadata: params.metadata,
+			at: new Date().toISOString(),
+		});
 	}
 
 	/** Adapters still speak GenerationResult internally; the seam is here. */
@@ -383,6 +417,8 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 	): Promise<Result<Generation>> {
 		const routed = route(params.model);
 		if (routed.error) return fail(routed.error);
+
+		await notifyLoading(kind, routed.data, params);
 
 		try {
 			const result = await toGeneration(
@@ -438,6 +474,8 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 	): Promise<Result<Job>> {
 		const routed = route(params.model);
 		if (routed.error) return fail(routed.error);
+
+		await notifyLoading(kind, routed.data, params);
 
 		const base = {
 			provider: routed.data.provider,

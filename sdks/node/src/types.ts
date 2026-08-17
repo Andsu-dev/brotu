@@ -1,4 +1,5 @@
 import type { AIModelConfig } from "./constants/model.types";
+import type { Hooks } from "./lib/hooks";
 import type { S3StorageConfig } from "./lib/storage";
 import type { WebhookConfig } from "./lib/webhook";
 
@@ -71,6 +72,14 @@ export interface BrotuAIOptions {
 	 * later with `ai.webhook.set`. A per-request `webhook` on the params wins.
 	 */
 	webhook?: string | WebhookConfig;
+	/**
+	 * In-process callbacks, one per kind and stage: `onVideoLoading`,
+	 * `onVideoSuccess`, `onVideoError`, and the same three for image, audio and
+	 * text. Your logic runs inside your process, so it can send an email, write
+	 * to your DB or push to a queue — no endpoint needed, unlike `webhook`.
+	 * Throwing inside a hook never fails the generation.
+	 */
+	hooks?: Hooks;
 }
 
 /** Resolved per-request routing: which host and key serve this model. */
