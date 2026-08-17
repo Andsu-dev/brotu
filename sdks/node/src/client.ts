@@ -5,6 +5,7 @@ import { GoogleAdapter } from "./adapters/google.adapter";
 import { KlingAdapter } from "./adapters/kling.adapter";
 import { OpenAIAdapter } from "./adapters/openai.adapter";
 import { QwenAdapter } from "./adapters/qwen.adapter";
+import { TopazAdapter } from "./adapters/topaz.adapter";
 import {
 	describeModels,
 	getAvailableModels,
@@ -46,8 +47,10 @@ import type {
 	GenerationResult,
 	GenerationType,
 	ImageGenerationParams,
+	ImageUpscaleParams,
 	TextGenerationParams,
 	VideoGenerationParams,
+	VideoUpscaleParams,
 } from "./ports/content-generator.port";
 import {
 	type AvatarInput,
@@ -67,6 +70,7 @@ export const NATIVE_PROVIDERS = [
 	"kling",
 	"openai",
 	"qwen",
+	"topaz",
 ] as const;
 
 /** An adapter whose provider queues work and can be asked about it later. */
@@ -86,11 +90,21 @@ export interface BrotuAI {
 		 * models stay in the list, with `reason`, so the gap is visible.
 		 */
 		list(): ModelAvailability[];
+		/**
+		 * Enhance a still you already have. `imageUrl` is required; `prompt` is
+		 * optional. Waits for the result — image upscale is usually seconds.
+		 */
+		upscale(params: ImageUpscaleParams): Promise<Result<Generation>>;
 	};
 	video: {
 		submit(params: VideoGenerationParams): Promise<Result<Job>>;
 		generate(params: VideoGenerationParams): Promise<Result<Generation>>;
 		list(): ModelAvailability[];
+		/**
+		 * Enhance a video you already have. `videoUrl` is required; `prompt` is
+		 * optional. Returns a handle — video upscale takes minutes.
+		 */
+		upscale(params: VideoUpscaleParams): Promise<Result<Job>>;
 	};
 	text: {
 		submit(params: TextGenerationParams): Promise<Result<Job>>;
@@ -286,6 +300,12 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 		}
 		if (provider.id === "google") {
 			return new GoogleAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+			});
+		}
+		if (provider.id === "topaz") {
+			return new TopazAdapter({
 				apiKey: provider.apiKey,
 				baseUrl: provider.baseUrl,
 			});
@@ -692,11 +712,66 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 			submit: (params) => submit("image", params),
 			generate: (params) => generate("image", params),
 			list: () => listFor("image"),
+			upscale: (params) => {
+				if (!params.imageUrl?.trim()) {
+					return Promise.resolve(
+						fail({
+							code: "invalid_request",
+							message: "image.upscale needs imageUrl.",
+							model: params.model,
+						}),
+					);
+				}
+				const model = getModel(params.model);
+				if (model && !model.nodeTypes.includes("image_upscale")) {
+					return Promise.resolve(
+						fail({
+							code: "invalid_request",
+							message: `"${params.model}" is not an image upscale model.`,
+							model: params.model,
+						}),
+					);
+				}
+				return generate("image", {
+					...params,
+					prompt: params.prompt ?? "",
+					referenceImages: [
+						params.imageUrl,
+						...(params.referenceImages ?? []),
+					],
+				});
+			},
 		},
 		video: {
 			submit: (params) => submit("video", params),
 			generate: (params) => generate("video", params),
 			list: () => listFor("video"),
+			upscale: (params) => {
+				if (!params.videoUrl?.trim()) {
+					return Promise.resolve(
+						fail({
+							code: "invalid_request",
+							message: "video.upscale needs videoUrl.",
+							model: params.model,
+						}),
+					);
+				}
+				const model = getModel(params.model);
+				if (model && !model.nodeTypes.includes("video_upscale")) {
+					return Promise.resolve(
+						fail({
+							code: "invalid_request",
+							message: `"${params.model}" is not a video upscale model. Interpolation models use ai.video.submit.`,
+							model: params.model,
+						}),
+					);
+				}
+				return submit("video", {
+					...params,
+					prompt: params.prompt ?? "",
+					videoUrl: params.videoUrl,
+				});
+			},
 		},
 		text: {
 			submit: (params) => submit("text", params),

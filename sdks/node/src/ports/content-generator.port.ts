@@ -134,6 +134,20 @@ export interface VideoGenerationParams extends CommonGenerationParams {
 	videoUrls?: string[];
 }
 
+/** `ai.video.upscale`. A source file, not a prompt. */
+export interface VideoUpscaleParams extends Omit<VideoGenerationParams, "prompt" | "videoUrl"> {
+	model: string;
+	videoUrl: string;
+	prompt?: string;
+}
+
+/** `ai.image.upscale`. A source still, not a prompt. */
+export interface ImageUpscaleParams extends Omit<ImageGenerationParams, "prompt"> {
+	model: string;
+	imageUrl: string;
+	prompt?: string;
+}
+
 export interface TextGenerationParams extends CommonGenerationParams {
 	systemPrompt?: string;
 	maxTokens?: number;

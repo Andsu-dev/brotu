@@ -42,6 +42,29 @@ describe("the data/error contract", () => {
 	const ai = () =>
 		brotu({ apiKey: "brotu_sk_test", providers: { kling: { apiKey: "k" } } });
 
+	it("exposes video.upscale and image.upscale", async () => {
+		const client = ai();
+		const video = await client.video.upscale({
+			model: "kling/v2-6",
+			videoUrl: "https://cdn.example/in.mp4",
+		});
+		expect(video.error?.code).toBe("invalid_request");
+		expect(video.error?.message).toMatch(/not a video upscale model/);
+
+		const missing = await client.video.upscale({
+			model: "prob-4",
+			videoUrl: "",
+		});
+		expect(missing.error?.message).toMatch(/videoUrl/);
+
+		const image = await client.image.upscale({
+			model: "gpt-image-2",
+			imageUrl: "https://cdn.example/in.jpg",
+		});
+		expect(image.error?.code).toBe("invalid_request");
+		expect(image.error?.message).toMatch(/not an image upscale model/);
+	});
+
 	it("reports an unknown model as data:null with a code", async () => {
 		const { data, error } = await ai().video.submit({
 			prompt: "x",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { BytePlusAdapter } from "../adapters/byteplus.adapter";
 import { KlingAdapter } from "../adapters/kling.adapter";
 import { QwenAdapter } from "../adapters/qwen.adapter";
+import { TopazAdapter } from "../adapters/topaz.adapter";
 import { getModel, getModels, registerModels, resetCatalog } from "../catalog";
 import { brotu } from "../client";
 import type { AIModelConfig } from "../constants/model.types";
@@ -16,6 +17,7 @@ const ADAPTERS = [
 	new KlingAdapter({ apiKey: "k" }),
 	new BytePlusAdapter({ apiKey: "ark-k" }),
 	new QwenAdapter({ apiKey: "sk-ws-k" }),
+	new TopazAdapter({ apiKey: "tz-k" }),
 ];
 
 describe("every adapter presents the same surface", () => {
@@ -91,6 +93,17 @@ describe("every output has the same shape", () => {
 		expect(outputs[0]?.taskId).toBe("t2");
 	});
 
+	it("topaz puts nothing outside the named fields", () => {
+		const outputs = outputsOf(ADAPTERS[3], {
+			status: "complete",
+			download: { url: "https://x/v.mp4", expiresAt: Date.now() + 1000 },
+		});
+		for (const key of Object.keys(outputs[0] ?? {})) {
+			expect(NAMED).toContain(key);
+		}
+		expect(outputs[0]?.url).toBe("https://x/v.mp4");
+	});
+
 	it("qwen puts nothing outside the named fields", () => {
 		const outputs = outputsOf(ADAPTERS[2], {
 			request_id: "r",
@@ -122,6 +135,16 @@ describe("every output has the same shape", () => {
 				{
 					request_id: "r",
 					output: { task_id: "c", video_url: "https://x/c.mp4" },
+				},
+			],
+			[
+				ADAPTERS[3],
+				{
+					status: "complete",
+					download: {
+						url: "https://x/d.mp4",
+						expiresAt: Date.now() + 86_400_000,
+					},
 				},
 			],
 		];

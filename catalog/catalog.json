@@ -7,15 +7,201 @@
 		"google",
 		"kling",
 		"openai",
-		"qwen"
+		"qwen",
+		"topaz"
 	],
 	"counts": {
+		"video": 74,
+		"image": 41,
 		"audio": 12,
-		"image": 29,
-		"video": 37,
 		"text": 19
 	},
 	"models": [
+		{
+			"id": "aaa-9",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis Aliasing / Moire",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Aliasing and moire cleanup."
+		},
+		{
+			"id": "ahq-12",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis High Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Artemis for clean footage."
+		},
+		{
+			"id": "aion-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Aion",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Extreme slow motion on complex, high-res motion."
+		},
+		{
+			"id": "alq-13",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis Low Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Artemis for degraded sources."
+		},
+		{
+			"id": "alqs-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis Strong Halo",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Strong halo reduction."
+		},
+		{
+			"id": "amq-13",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis Medium Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Artemis for typical compression."
+		},
+		{
+			"id": "amqs-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Artemis Medium Halo",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Medium halo reduction."
+		},
+		{
+			"id": "apf-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Apollo Fast",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Faster Apollo."
+		},
+		{
+			"id": "apo-8",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Apollo",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Default slow-mo and frame-rate conversion."
+		},
+		{
+			"id": "ast-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Astra 2",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Creative GenAI video upscale."
+		},
+		{
+			"id": "bloom-2",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Bloom 2",
+			"inputType": "image_required",
+			"description": "Creative upscale for GenAI images."
+		},
+		{
+			"id": "cgi",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Art & CGI",
+			"inputType": "image_required",
+			"description": "Illustrations, renders, game art."
+		},
+		{
+			"id": "chf-3",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Chronos Fast",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Faster Chronos."
+		},
+		{
+			"id": "chr-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Chronos",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Interpolation for harder motion."
+		},
+		{
+			"id": "color-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Video Colorization",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Black-and-white to color."
+		},
 		{
 			"id": "cosyvoice-v3-flash",
 			"provider": "qwen",
@@ -27,6 +213,27 @@
 				"usdPerUnit": 0.000015
 			},
 			"description": "Voices: Cherry, Ethan, Jennifer, Ryan, Dylan, Sunny, Nofish"
+		},
+		{
+			"id": "ddv-3",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Dione DV",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Deinterlace camcorder footage."
+		},
+		{
+			"id": "denoise-max",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Denoise Max",
+			"inputType": "image_required",
+			"description": "Highest-quality image denoise."
 		},
 		{
 			"id": "dola-seedream-5-0-pro-260628",
@@ -174,6 +381,58 @@
 			}
 		},
 		{
+			"id": "dtd-4",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Dione Dehalo",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Deinterlace with halo cleanup."
+		},
+		{
+			"id": "dtds-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Dione Robust Dehalo",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Deinterlace, degraded, with halo cleanup."
+		},
+		{
+			"id": "dtv-4",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Dione TV",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Deinterlace broadcast footage."
+		},
+		{
+			"id": "dtvs-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Dione Robust",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Deinterlace degraded interlaced sources."
+		},
+		{
 			"id": "eleven_flash_v2_5",
 			"provider": "elevenlabs",
 			"category": "audio",
@@ -196,6 +455,19 @@
 			"name": "eleven_v3",
 			"inputType": "text_only",
 			"description": "Most expressive; widest language coverage. Up to 5,000 characters, 70 languages."
+		},
+		{
+			"id": "gcg-5",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Gaia CG",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "General CGI and renders."
 		},
 		{
 			"id": "gemini-2.5-flash",
@@ -388,6 +660,19 @@
 				"16:9",
 				"9:16"
 			]
+		},
+		{
+			"id": "ghq-5",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Gaia High Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "CGI and animation, high quality."
 		},
 		{
 			"id": "gpt-5.6-luna",
@@ -597,6 +882,40 @@
 				},
 				"usdPerUnit": 0.14
 			}
+		},
+		{
+			"id": "high-fidelity-v2",
+			"provider": "topaz",
+			"category": "image",
+			"name": "High Fidelity 2",
+			"inputType": "image_required",
+			"description": "Maximum source preservation."
+		},
+		{
+			"id": "iris-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Iris Low Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Face recovery, low quality."
+		},
+		{
+			"id": "iris-3",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Iris Medium Quality",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Face recovery, medium quality."
 		},
 		{
 			"id": "kling/image-v1",
@@ -949,6 +1268,92 @@
 			}
 		},
 		{
+			"id": "low-resolution-v2",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Low Resolution 2",
+			"inputType": "image_required",
+			"description": "Tiny or heavily compressed sources."
+		},
+		{
+			"id": "nxf-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Nyx Fast",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Fast video denoise."
+		},
+		{
+			"id": "nxhf-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Nyx High Fidelity",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Light denoise, keep texture."
+		},
+		{
+			"id": "nxl-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Nyx XL",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Heavy video denoise."
+		},
+		{
+			"id": "nyx-3",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Nyx",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Default video denoise."
+		},
+		{
+			"id": "pnat-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Proteus Natural",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Softer Proteus. 2× only."
+		},
+		{
+			"id": "prob-4",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Proteus",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Default video upscale. Preserves the source."
+		},
+		{
 			"id": "qwen-audio-3.0-tts-flash",
 			"provider": "qwen",
 			"category": "audio",
@@ -1112,6 +1517,35 @@
 				"unit": "token",
 				"usdPerUnit": 0.000006
 			}
+		},
+		{
+			"id": "recovery-v2",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Recover 3",
+			"inputType": "image_required",
+			"description": "Heavily damaged sources."
+		},
+		{
+			"id": "redefine",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Redefine",
+			"inputType": "image_required",
+			"description": "Prompt-guided generative enhance."
+		},
+		{
+			"id": "rhea-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Rhea",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "High-fidelity 4× upscale for fine detail."
 		},
 		{
 			"id": "seedance-1-0-lite-i2v-250428",
@@ -1362,6 +1796,121 @@
 			}
 		},
 		{
+			"id": "slf-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Starlight Fast 2",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Faster generative upscale."
+		},
+		{
+			"id": "slhq-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Starlight HQ",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Maximum quality generative enhance."
+		},
+		{
+			"id": "slm-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Starlight Mini",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Archival and interlaced restoration."
+		},
+		{
+			"id": "slp-2.6",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Starlight Precise 2.6",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Generative upscale to 4K. Faces, texture, text."
+		},
+		{
+			"id": "standard-max",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Standard Max",
+			"inputType": "image_required",
+			"description": "Default generative image upscale."
+		},
+		{
+			"id": "standard-v2",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Standard 2",
+			"inputType": "image_required",
+			"description": "Default image upscale."
+		},
+		{
+			"id": "text-refine",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Text & Shapes",
+			"inputType": "image_required",
+			"description": "Documents, screenshots, type."
+		},
+		{
+			"id": "thd-3",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Theia Fine Tune Detail",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "More aggressive detail."
+		},
+		{
+			"id": "thf-4",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Theia Fine Tune Fidelity",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Lighter touch, closer to the source."
+		},
+		{
+			"id": "thm-2",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Themis 2",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Motion deblur."
+		},
+		{
 			"id": "veo-3.1-fast-generate-preview",
 			"provider": "google",
 			"category": "video",
@@ -1582,6 +2131,35 @@
 				"720P",
 				"1080P"
 			]
+		},
+		{
+			"id": "wonder",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Wonder",
+			"inputType": "image_required",
+			"description": "One-click generative restore."
+		},
+		{
+			"id": "wonder-1",
+			"provider": "topaz",
+			"category": "video",
+			"name": "Starlight Sharp",
+			"inputType": "video_required",
+			"resolutions": [
+				"720p",
+				"1080p",
+				"4k"
+			],
+			"description": "Local-first sharpening restore."
+		},
+		{
+			"id": "wonder-3.5",
+			"provider": "topaz",
+			"category": "image",
+			"name": "Wonder 3.5",
+			"inputType": "image_required",
+			"description": "Highest-quality generative image upscale."
 		},
 		{
 			"id": "z-image-turbo",

@@ -8,6 +8,7 @@ import { GOOGLE_CATALOG } from "./providers/google.models";
 import { KLING_AUDIO_CATALOG, KLING_CATALOG } from "./providers/kling.models";
 import { OPENAI_CATALOG } from "./providers/openai.models";
 import { QWEN_CATALOG } from "./providers/qwen.models";
+import { TOPAZ_CATALOG } from "./providers/topaz.models";
 import type { BrotuAIOptions, ProviderConfig, ResolvedProvider } from "./types";
 
 /**
@@ -21,6 +22,7 @@ const PROVIDER_BASE_URLS: Record<string, string> = {
 	google: "https://generativelanguage.googleapis.com",
 	openai: "https://api.openai.com",
 	qwen: "https://dashscope-intl.aliyuncs.com",
+	topaz: "https://api.topazlabs.com",
 	brotu: "https://api.brotu.app",
 };
 
@@ -46,6 +48,7 @@ const BUILT_IN: AIModelConfig[] = [
 	...OPENAI_CATALOG,
 	...GOOGLE_CATALOG,
 	...ELEVENLABS_CATALOG,
+	...TOPAZ_CATALOG,
 ];
 
 let catalog: AIModelConfig[] = BUILT_IN;
