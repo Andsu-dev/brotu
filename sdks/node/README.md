@@ -27,7 +27,7 @@ Kling, Seedance, Wan, Veo, Gemini, gpt-image and ElevenLabs all speak different 
 
 Get your key (`brotu_sk_…`) at [brotu.app](https://brotu.app). Pass a vendor key you already have and that model hits the vendor. Everything else generates on Brotu.
 
-97 models: 37 video, 29 image, 12 speech, 19 text. Full table in [CATALOG.md](./CATALOG.md). That file is generated from the catalog, so it cannot drift from what the code supports.
+146 models: 74 video, 41 image, 12 speech, 19 text. Full table in [CATALOG.md](./CATALOG.md). That file is generated from the catalog, so it cannot drift from what the code supports.
 
 ## Install
 
@@ -57,6 +57,7 @@ const ai = brotu({
     openai: { apiKey: process.env.OPENAI_API_KEY! },
     qwen: { apiKey: process.env.QWEN_API_KEY! },
     elevenlabs: { apiKey: process.env.ELEVENLABS_API_KEY! },
+    topaz: { apiKey: process.env.TOPAZ_API_KEY! },
   },
   webhook: {
     url: "https://my.app/hooks/brotu",
@@ -71,8 +72,8 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 
 | Surface | Methods |
 |---|---|
-| `ai.video` | `submit` / `generate` / `list` |
-| `ai.image` | `submit` / `generate` / `list` |
+| `ai.video` | `submit` / `generate` / `list` / `upscale` |
+| `ai.image` | `submit` / `generate` / `list` / `upscale` |
 | `ai.text` | `submit` / `generate` / `list` |
 | `ai.audio` | `submit` / `generate` / `list` |
 | `ai.jobs` | `poll` / `wait` |
@@ -99,7 +100,7 @@ ai.audio.list();
 //    reason: "Brotu generates image and video only. Pass providers.kling to run this one." }, …]
 ```
 
-With a Brotu key alone that is 29 image and 37 video models, and the 31 speech and text models listed with the key they are waiting on. Models you cannot reach stay in the list on purpose: hiding them would hide the gap. `ai.models()` is the filtered view, only what runs.
+With a Brotu key alone that is 41 image and 74 video models, and the 31 speech and text models listed with the key they are waiting on. Models you cannot reach stay in the list on purpose: hiding them would hide the gap. `ai.models()` is the filtered view, only what runs.
 
 ## Video
 

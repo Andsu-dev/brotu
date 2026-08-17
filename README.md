@@ -30,7 +30,7 @@ Vendors do not agree on anything. Kling wants a task id. BytePlus Seedance 400s 
 
 `@brotu/ai` is one TypeScript client for all of them. Get your key at [brotu.app](https://brotu.app). Pass a vendor key you already have and that model hits the vendor. Everything else generates on Brotu.
 
-97 models today: 37 video, 29 image, 12 speech, 19 text. Switching vendor is a model id, not a rewrite.
+146 models today: 74 video, 41 image, 12 speech, 19 text. Switching vendor is a model id, not a rewrite.
 
 ```ts
 import { brotu } from "@brotu/ai";
@@ -42,6 +42,7 @@ const ai = brotu({
     byteplus: { apiKey: process.env.ARK_API_KEY! },
     google: { apiKey: process.env.GEMINI_API_KEY! },
     openai: { apiKey: process.env.OPENAI_API_KEY! },
+    topaz: { apiKey: process.env.TOPAZ_API_KEY! },
   },
   webhook: {
     url: "https://my.app/hooks/brotu",
@@ -56,8 +57,8 @@ The portable surface is the same on every vendor:
 
 | Call | What it does |
 |---|---|
-| `ai.video` | text-to-video, image-to-video, edit |
-| `ai.image` | text-to-image, image-to-image |
+| `ai.video` | text-to-video, image-to-video, edit. `upscale` for a source file |
+| `ai.image` | text-to-image, image-to-image. `upscale` for a source still |
 | `ai.text` | chat / completions |
 | `ai.audio` | text-to-speech |
 | `ai.jobs` | poll or wait on a stored handle |
@@ -121,6 +122,22 @@ await ai.video.submit({
   imageUrl: "https://example.com/frame.png",
   duration: 5,
   resolution: "480p",
+});
+```
+
+Topaz takes a source file. Use `upscale`, not `generate`. Proteus (`prob-4`) is the default video model.
+
+```ts
+const { data: job } = await ai.video.upscale({
+  model: "prob-4",
+  videoUrl: "https://example.com/clip.mp4",
+  resolution: "4k",
+});
+
+const { data } = await ai.image.upscale({
+  model: "standard-v2",
+  imageUrl: "https://example.com/still.jpg",
+  resolution: "2K",
 });
 ```
 
@@ -202,7 +219,7 @@ brotu video "a cat, cinematic" -m kling/v2-6 --duration 5
 brotu job wait brotu-job.json --save out.mp4
 ```
 
-`BROTU_API_KEY` comes from [brotu.app](https://brotu.app). Vendor keys (`KLING_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `QWEN_API_KEY`, `ELEVENLABS_API_KEY`) generate on the vendor when you have them. Video submits and writes a job file. `--wait` blocks.
+`BROTU_API_KEY` comes from [brotu.app](https://brotu.app). Vendor keys (`KLING_API_KEY`, `ARK_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `QWEN_API_KEY`, `ELEVENLABS_API_KEY`, `TOPAZ_API_KEY`) generate on the vendor when you have them. Video submits and writes a job file. `--wait` blocks.
 
 ## Jobs
 
@@ -443,6 +460,7 @@ const ai = brotu({
 | Google (Veo, Gemini, Omni) | ✓ | ✓ | ✓ | ✓ | conversational omni |
 | OpenAI | | ✓ | | ✓ | |
 | ElevenLabs | | | ✓ | | |
+| Topaz | ✓ | ✓ | | | video + image upscale, interpolate |
 
 Every model, duration, resolution and price: [`sdks/node/CATALOG.md`](./sdks/node/CATALOG.md). Generated from the catalog, so it cannot drift from what the code runs.
 
