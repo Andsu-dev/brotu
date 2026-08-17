@@ -20,6 +20,21 @@
 			"types": "./dist/providers/youtube.d.ts",
 			"import": "./dist/providers/youtube.js",
 			"require": "./dist/providers/youtube.cjs"
+		},
+		"./tiktok": {
+			"types": "./dist/providers/tiktok.d.ts",
+			"import": "./dist/providers/tiktok.js",
+			"require": "./dist/providers/tiktok.cjs"
+		},
+		"./linkedin": {
+			"types": "./dist/providers/linkedin.d.ts",
+			"import": "./dist/providers/linkedin.js",
+			"require": "./dist/providers/linkedin.cjs"
+		},
+		"./x": {
+			"types": "./dist/providers/x.d.ts",
+			"import": "./dist/providers/x.js",
+			"require": "./dist/providers/x.cjs"
 		}
 	},
 	"scripts": {
@@ -38,14 +53,24 @@
 	},
 	"description": "One TypeScript client for publishing to social platforms, with the OAuth and webhooks that come with them.",
 	"license": "MIT",
-	"publishConfig": { "access": "public" },
-	"engines": { "node": ">=18" },
-	"files": ["dist", "README.md", "LICENSE"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Zorbi-Tech/brotu.git",
 		"directory": "sdks/social"
 	},
 	"homepage": "https://github.com/Zorbi-Tech/brotu",
-	"bugs": { "url": "https://github.com/Zorbi-Tech/brotu/issues" }
+	"bugs": {
+		"url": "https://github.com/Zorbi-Tech/brotu/issues"
+	}
 }

@@ -5,7 +5,7 @@ export const PLATFORMS = [
 	"threads",
 	"youtube",
 	"tiktok",
-	"twitter",
+	"x",
 	"linkedin",
 ] as const;
 

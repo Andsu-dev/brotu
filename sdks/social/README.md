@@ -14,6 +14,9 @@ bun add @brotu/social
 import { brotu } from "@brotu/social";
 import { meta } from "@brotu/social/meta";
 import { youtube } from "@brotu/social/youtube";
+import { tiktok } from "@brotu/social/tiktok";
+import { linkedin } from "@brotu/social/linkedin";
+import { x } from "@brotu/social/x";
 
 const client = brotu({
   providers: [
@@ -27,6 +30,9 @@ const client = brotu({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    tiktok({ accessToken: process.env.TIKTOK_TOKEN! }),
+    linkedin({ accessToken: process.env.LI_TOKEN!, memberId: process.env.LI_SUB! }),
+    x({ accessToken: process.env.X_TOKEN! }),
   ],
 });
 
@@ -52,12 +58,17 @@ brotu({ providers: [meta({ … })] });
 
 The namespace is still per platform, because publishing is: Instagram has no text-only post, Facebook has three endpoints depending on the media, Threads lives on another host.
 
-| Import | Platforms |
-|---|---|
-| `@brotu/social/meta` | `facebook`, `instagram`, `threads` |
-| `@brotu/social/youtube` | `youtube` |
+| Import | Platforms | Publish | OAuth | Webhooks |
+|---|---|---|---|---|
+| `@brotu/social/meta` | `facebook`, `instagram`, `threads` | ✅ | ✅ | ✅ |
+| `@brotu/social/youtube` | `youtube` | ✅ | ✅ | — |
+| `@brotu/social/tiktok` | `tiktok` | ✅ | ✅ | — |
+| `@brotu/social/linkedin` | `linkedin` | ✅ | ✅ | — |
+| `@brotu/social/x` | `x` | ✅ | ✅ | — |
 
-Subpath imports, so a project that never touches YouTube never bundles it.
+Subpath imports, so a project that never touches TikTok never bundles it.
+
+Webhooks are Meta-only because Meta is the only one of the five that pushes events to you. The rest are polled, and polling is your scheduler's job, not this package's.
 
 ## Posting
 
@@ -104,8 +115,6 @@ await client.youtube.post({
   options: { youtube: { privacyStatus: "public", tags: ["shorts"] } },
 });
 ```
-
-**YouTube uploads private by default.** Publishing to the world should be something you asked for.
 
 ## OAuth
 
@@ -183,9 +192,16 @@ const { data } = await client.facebook.accounts();
 // [{ platform: "facebook", id: "123", displayName: "Minha Página" }]
 ```
 
+## Defaults that are deliberately quiet
+
+Publishing on someone's behalf should never surprise them, so the loud options are opt-in:
+
+- **YouTube uploads `private`.**
+- **TikTok posts `SELF_ONLY`, into the inbox as a draft.** Direct posting needs an audited TikTok app; pass `tiktok({ directPost: true })` once yours is.
+- **LinkedIn posts `PUBLIC`**, because a LinkedIn post that only you can see has no use.
+
 ## What is not here yet
 
-- **TikTok, Twitter and LinkedIn.** The platform names exist in the type; no plugin ships for them. `post` returns `unconfigured_platform` and names what is missing.
 - **The hosted path.** Publishing through Brotu with connected accounts — so you skip OAuth entirely — slots in as another provider plugin. It is not open yet.
 - **Scheduling.** This publishes now. Anything later is your queue's job.
 

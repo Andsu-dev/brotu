@@ -7,6 +7,9 @@ export default defineConfig({
 		"src/index.ts",
 		"src/providers/meta.ts",
 		"src/providers/youtube.ts",
+		"src/providers/tiktok.ts",
+		"src/providers/linkedin.ts",
+		"src/providers/x.ts",
 	],
 	format: ["esm", "cjs"],
 	// Declarations come from tsc, not tsup — same reason as @brotu/ai.
