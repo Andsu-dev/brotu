@@ -48,9 +48,21 @@ export function estimateFor(
 	const rate =
 		(resolution ? model?.pricing?.byResolution?.[resolution] : undefined) ??
 		model?.pricing?.usdPerUnit;
+	// Credits are the platform's own currency, so the tier that matches the
+	// request wins over the model's flat rate.
+	const tier = model?.runtimePricingTiers?.find(
+		(candidate) =>
+			(candidate.resolution === undefined ||
+				candidate.resolution === resolution) &&
+			(candidate.durationSeconds === undefined ||
+				candidate.durationSeconds === units),
+	);
+	const creditsPerUnit = tier?.creditsPerUnit ?? model?.creditsPerUnit;
+
 	return {
 		unit,
 		units,
+		credits: creditsPerUnit ? creditsPerUnit * units : null,
 		usd:
 			rate === undefined || unit === "token"
 				? null

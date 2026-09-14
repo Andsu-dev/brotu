@@ -341,6 +341,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 		outputs?: Generation["outputs"];
 		error?: AIError;
 		metadata?: Record<string, string>;
+		creditsUsed?: number;
 		processingTimeMs?: number;
 	}): Promise<void> {
 		const config = webhookFor(input.params);
@@ -366,6 +367,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 				? { code: input.error.code, message: input.error.message }
 				: undefined,
 			metadata: input.metadata ?? input.job?.metadata,
+			creditsUsed: input.params?.credits ?? input.creditsUsed,
 			processingTimeMs: input.processingTimeMs,
 			completedAt: new Date().toISOString(),
 		};
@@ -380,6 +382,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 				outputs: payload.outputs,
 				error: payload.error,
 				metadata: payload.metadata,
+				creditsUsed: payload.creditsUsed,
 				processingTimeMs: payload.processingTimeMs,
 				at: payload.completedAt,
 			});
@@ -407,6 +410,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 	async function toGeneration(
 		raw: GenerationResult,
 		metadata?: Record<string, string>,
+		credits?: number,
 	): Promise<Result<Generation>> {
 		if (!raw.success) {
 			return fail({
@@ -427,6 +431,9 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 			provider: raw.provider,
 			model: raw.model,
 			processingTimeMs: raw.processingTimeMs,
+			// What you said to charge wins over what the platform reported: the
+			// caller's number is the one their ledger has to match.
+			creditsUsed: credits ?? raw.creditsUsed,
 			metadata,
 		});
 	}
@@ -444,6 +451,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 			const result = await toGeneration(
 				await generateWith(routed.data.adapter, kind, params),
 				params.metadata,
+				params.credits,
 			);
 			if (result.error) {
 				await notifySettled({
@@ -465,6 +473,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 				model: result.data.model,
 				outputs: result.data.outputs,
 				metadata: result.data.metadata,
+				creditsUsed: result.data.creditsUsed,
 				processingTimeMs: result.data.processingTimeMs,
 			});
 			return result;
@@ -574,6 +583,7 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 				outputs: snapshot.result.outputs,
 				provider: snapshot.result.provider,
 				model: snapshot.result.model,
+				creditsUsed: snapshot.result.creditsUsed,
 				processingTimeMs: snapshot.result.processingTimeMs,
 				metadata: job.metadata,
 			});
@@ -600,7 +610,11 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 		snapshot: JobSnapshot,
 	): Promise<JobSnapshot> {
 		if (snapshot.status === "succeeded" && snapshot.result) {
-			const persisted = await toGeneration(snapshot.result, job.metadata);
+			const persisted = await toGeneration(
+				snapshot.result,
+				job.metadata,
+				job.params.credits,
+			);
 			if (!persisted.error) {
 				snapshot = {
 					status: "succeeded",
@@ -811,6 +825,8 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 							provider: snapshot.result.provider,
 							model: snapshot.result.model,
 							processingTimeMs: snapshot.result.processingTimeMs,
+							creditsUsed:
+								job.params.credits ?? snapshot.result.creditsUsed,
 							metadata: job.metadata,
 						});
 					}
