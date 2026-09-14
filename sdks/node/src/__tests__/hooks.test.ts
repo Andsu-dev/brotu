@@ -91,3 +91,24 @@ describe("hooks", () => {
 		expect(order.at(-1)).toBe("error");
 	});
 });
+
+describe("credits", () => {
+	it("hands the request's credits back on the job's hook and result", async () => {
+		const seen: HookEvent[] = [];
+		const ai = brotu({
+			apiKey: "brotu_sk_test",
+			providers: { kling: { apiKey: "k" } },
+			hooks: { onVideoSuccess: (e) => void seen.push(e) },
+		});
+
+		const job = settledJob("inline-credits");
+		job.params = { prompt: "x", credits: 3 };
+
+		const polled = await ai.jobs.poll(job);
+		expect(polled.error).toBeNull();
+		expect(seen[0]?.creditsUsed).toBe(3);
+
+		const waited = await ai.jobs.wait(job);
+		expect(waited.data?.creditsUsed).toBe(3);
+	});
+});

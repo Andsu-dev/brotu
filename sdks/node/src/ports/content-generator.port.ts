@@ -50,6 +50,15 @@ export interface CommonGenerationParams {
 	 * string or `{ url, secret }`. Not sent to the provider.
 	 */
 	webhook?: string | WebhookConfig;
+	/**
+	 * What this generation costs the user on your side, in your own credits.
+	 * Carried through untouched and handed back on the job, the result, the hook
+	 * and the webhook, so your server debits from one number instead of
+	 * recomputing it per model. Never sent to the provider, and nothing is
+	 * debited here — the SDK holds no balance. `estimateCost().credits` gives the
+	 * catalog's own figure for the model, if you want to charge that.
+	 */
+	credits?: number;
 }
 
 /**
@@ -225,6 +234,11 @@ export interface CostEstimate {
 	 * gap, and zero reads as free.
 	 */
 	usd: number | null;
+	/**
+	 * What the catalog says this generation costs in credits, or null when the
+	 * model carries no credit rate. Same honesty rule as `usd`.
+	 */
+	credits: number | null;
 	/** What the price depends on, or why it is unknown. */
 	note?: string;
 	provider: string;

@@ -79,7 +79,7 @@ Every public call returns `{ data, error }`. `data` is unusable until you narrow
 | `ai.jobs` | `poll` / `wait` |
 | `ai.webhook` | `set` / `clear` / `get` |
 | `hooks` | constructor option: your own code on start, success and failure |
-| `ai.estimateCost` | units, and USD when verified |
+| `ai.estimateCost` | units, credits from the catalog, and USD when verified |
 | `ai.kling` | `motionControl`, `omniVideo`, `avatar`, `outpainting`, `imageOmni` |
 | `ai.google` | `omniVideo` (conversational refine) |
 
@@ -242,7 +242,7 @@ const ai = brotu({
 
 One optional callback per kind and stage — `on{Image,Video,Audio,Text}{Loading,Success,Error}`, twelve typed names. `Loading` fires once the model is routed, before the provider is called; `Success` and `Error` fire wherever the webhook fires, deduped by job id. A hook that throws never fails the generation.
 
-The event is `HookEvent`: `kind`, `stage`, `provider`, `model`, `jobId`, `outputs`, `error`, `metadata`, `processingTimeMs`, `at`.
+The event is `HookEvent`: `kind`, `stage`, `provider`, `model`, `jobId`, `outputs`, `error`, `metadata`, `creditsUsed`, `processingTimeMs`, `at`.
 
 ## Motion control, avatars, omni
 
@@ -312,6 +312,22 @@ const { data } = await ai.estimateCost("video", {
   prompt: "x",
   duration: 5,
   resolution: "720p",
+});
+```
+
+`data.credits` is the catalog's credit price for that request, or null where the model carries no rate.
+
+To bill your own users per generation, pass `credits` on the request. It comes back as `creditsUsed` on the result, the hook and the webhook, so your ledger debits one number instead of recomputing it per model — nothing is debited here.
+
+```ts
+const estimate = await ai.estimateCost("video", { model: "kling/v3", prompt: "x", duration: 5 });
+
+await ai.video.generate({
+  model: "kling/v3",
+  prompt: "x",
+  duration: 5,
+  credits: estimate.data?.credits ?? 0,
+  metadata: { userId: "u_1" },
 });
 ```
 

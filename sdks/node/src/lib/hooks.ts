@@ -17,6 +17,8 @@ export interface HookEvent {
 	outputs?: GenerationOutput[];
 	error?: Pick<AIError, "code" | "message">;
 	metadata?: Record<string, string>;
+	/** Credits to charge for this generation, as `Generation.creditsUsed`. */
+	creditsUsed?: number;
 	processingTimeMs?: number;
 	at: string;
 }

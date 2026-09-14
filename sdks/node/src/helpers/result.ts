@@ -63,6 +63,12 @@ export interface Generation {
 	provider: string;
 	model: string;
 	processingTimeMs: number;
+	/**
+	 * Credits this generation cost. The `credits` you passed on the request when
+	 * you passed one, otherwise what the platform charged — 0 on a vendor key,
+	 * which bills you in dollars, not credits.
+	 */
+	creditsUsed: number;
 	/** The tags the request carried, handed straight back. */
 	metadata?: Record<string, string>;
 }

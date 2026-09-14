@@ -374,6 +374,7 @@ export class BrotuAdapter implements ContentGeneratorPort {
 			return {
 				unit: type === "video" ? "second" : "image",
 				units: credits,
+				credits,
 				usd: null,
 				note: `${credits} Brotu credit${credits === 1 ? "" : "s"}. A vendor key generates on that provider.`,
 				provider: this.providerName,
