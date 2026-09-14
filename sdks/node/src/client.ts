@@ -2,6 +2,7 @@ import { BrotuAdapter } from "./adapters/brotu.adapter";
 import { BytePlusAdapter } from "./adapters/byteplus.adapter";
 import { ElevenLabsAdapter } from "./adapters/elevenlabs.adapter";
 import { GoogleAdapter } from "./adapters/google.adapter";
+import { KieAdapter } from "./adapters/kie.adapter";
 import { KlingAdapter } from "./adapters/kling.adapter";
 import { OpenAIAdapter } from "./adapters/openai.adapter";
 import { QwenAdapter } from "./adapters/qwen.adapter";
@@ -67,6 +68,7 @@ export const NATIVE_PROVIDERS = [
 	"byteplus",
 	"elevenlabs",
 	"google",
+	"kie",
 	"kling",
 	"openai",
 	"qwen",
@@ -265,6 +267,16 @@ export function brotu(options: BrotuAIOptions): BrotuAI {
 				apiKey,
 				apiUrl: optionsWithKey.apiUrl,
 				workspaceId: optionsWithKey.workspaceId,
+			});
+		}
+		if (provider.id === "kie") {
+			return new KieAdapter({
+				apiKey: provider.apiKey,
+				baseUrl: provider.baseUrl,
+				// The client-level webhook doubles as kie's callback, so a submit
+				// never has to be polled. kie posts its own payload there — read it
+				// with `parseKieCallback`.
+				callbackUrl: registeredWebhook?.url,
 			});
 		}
 		if (provider.id === "kling") {

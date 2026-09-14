@@ -9,6 +9,8 @@ export type {
 export { ElevenLabsAdapter } from "./adapters/elevenlabs.adapter";
 export type { GoogleAdapterOptions } from "./adapters/google.adapter";
 export { GoogleAdapter } from "./adapters/google.adapter";
+export type { KieAdapterOptions, KieTaskResult } from "./adapters/kie.adapter";
+export { KieAdapter, kieSnapshot, parseKieCallback } from "./adapters/kie.adapter";
 export type { KlingAdapterOptions } from "./adapters/kling.adapter";
 export { KlingAdapter } from "./adapters/kling.adapter";
 export type { OpenAIAdapterOptions } from "./adapters/openai.adapter";
