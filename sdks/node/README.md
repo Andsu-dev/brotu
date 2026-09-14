@@ -102,6 +102,50 @@ ai.audio.list();
 
 With a Brotu key alone that is 41 image and 74 video models, and the 31 speech and text models listed with the key they are waiting on. Models you cannot reach stay in the list on purpose: hiding them would hide the gap. `ai.models()` is the filtered view, only what runs.
 
+## kie, one key for every model
+
+kie resells every vendor in this catalog. Configure it and it serves any model your own vendor keys do not, ahead of the Brotu fallback:
+
+```ts
+const ai = brotu({
+  apiKey: process.env.BROTU_API_KEY!,
+  providers: {
+    kie: { apiKey: process.env.KIE_API_KEY! },
+    kling: { apiKey: process.env.KLING_API_KEY! }, // this one still runs on Kling
+  },
+});
+```
+
+Routing order per model: its own vendor key → kie → Brotu credits. So a model moves off kie the day you get its official key, with no code change.
+
+Give it a callback and nothing has to be polled — kie POSTs your endpoint when the task settles, and `parseKieCallback` turns that body into the same result a poll returns:
+
+```ts
+import { kieSnapshot, parseKieCallback } from "@brotu/ai";
+
+ai.webhook.set("https://my.app/hooks/kie"); // becomes kie's callBackUrl
+
+const { data: job } = await ai.video.submit({ model: "kling/v2-6", prompt: "a cat" });
+// store `job` — it is plain JSON
+
+// in your endpoint
+const settled = parseKieCallback(await request.text());
+const snapshot = kieSnapshot(settled, job.model);
+// { status: "succeeded", result: { outputs: [{ url, mimeType }], creditsUsed } }
+```
+
+kie names the same field differently per family — kling wants a string `duration` and `sound`, seedance an integer and `generate_audio`. Those two are mapped; every other model gets the common keys (`prompt`, `image_url`, `resolution`, `aspect_ratio`, …). Anything that does not fit goes in `providerOptions.kie`, merged last:
+
+```ts
+await ai.video.submit({
+  model: "wan2.6-i2v",
+  prompt: "x",
+  providerOptions: { kie: { enable_prompt_expansion: false } },
+});
+```
+
+A model whose catalog entry carries `endpoint` (`"/market/<kie model>"`) uses that id, so a catalog of your own routes through kie without touching the SDK. That is also the fix when kie names a model differently from this catalog and the built-in table does not cover it — kie answers an unknown model with an error rather than a wrong generation.
+
 ## Video
 
 `submit` returns a job handle. `generate` waits. Video takes minutes, so do not `generate` inside a request handler.

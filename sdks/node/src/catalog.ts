@@ -23,6 +23,7 @@ const PROVIDER_BASE_URLS: Record<string, string> = {
 	openai: "https://api.openai.com",
 	qwen: "https://dashscope-intl.aliyuncs.com",
 	topaz: "https://api.topazlabs.com",
+	kie: "https://api.kie.ai/api/v1",
 	brotu: "https://api.brotu.app",
 };
 
@@ -137,6 +138,18 @@ export function resolveProvider(
 			);
 		}
 		return { id, apiKey: configured.apiKey, baseUrl: baseUrl.replace(/\/$/, "") };
+	}
+
+	// kie resells every vendor here, so it serves any model a vendor key does
+	// not. It sits between the vendor and Brotu on purpose: you asked for it by
+	// configuring the key, and it bills your kie account instead of credits.
+	const kie = vendorProviders(options).kie;
+	if (kie && id !== "kie") {
+		return {
+			id: "kie",
+			apiKey: kie.apiKey,
+			baseUrl: (kie.baseUrl ?? PROVIDER_BASE_URLS.kie).replace(/\/$/, ""),
+		};
 	}
 
 	const platformKey = brotuApiKey(options);
